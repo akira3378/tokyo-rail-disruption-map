@@ -465,12 +465,6 @@ function RailSegment({
   const segmentLabel = `${line.name}: ${from.name} - ${to.name} / ${
     segment.incident?.title ?? statusText[segment.status].description
   }`;
-  const strokeDasharray =
-    segment.status === "reduced"
-      ? "10 10"
-      : segment.status === "unknown"
-        ? "3 8"
-        : undefined;
 
   return (
     <g>
@@ -519,7 +513,6 @@ function RailSegment({
         stroke={isNormal ? line.color : undefined}
         strokeLinecap="round"
         strokeWidth={selected ? 12 : hovered ? 10 : isNormal ? 7 : 10}
-        strokeDasharray={strokeDasharray}
         aria-hidden="true"
         className={`${strokeClass} cursor-pointer transition-all ${
           isDisrupted ? "rail-alert-blink" : ""
@@ -538,7 +531,7 @@ function RailSegment({
           stroke="#ffffff"
           strokeLinecap="round"
           strokeWidth="2.5"
-          strokeDasharray="8 8"
+          opacity="0.85"
           pointerEvents="none"
         />
       ) : null}

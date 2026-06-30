@@ -161,9 +161,29 @@ Future real-data versions should use legal and documented data sources, such as:
 - GTFS-RT feeds where available and licensed for the intended use
 - a backend service that normalizes provider-specific data into the local `RailwaySnapshot` model
 
+See `docs/DATA_SOURCES.md` for the recommended ODPT/GTFS data-source strategy.
+
+## Open Data Import Path
+
+The repository includes a non-scraping ODPT import script:
+
+```bash
+ODPT_API_KEY=your_key npm run import:odpt
+```
+
+The script fetches documented ODPT resources and stores JSON in `data/odpt/raw/`:
+
+- `odpt:Railway`
+- `odpt:Station`
+- `odpt:TrainInformation`
+
+This is intentionally separate from the UI. The next step would be a mapper that converts provider-specific records into this app's `RailwaySnapshot` model.
+
 ## Future Extensions
 
 - Replace mock scenarios with a real provider implementation behind the same data access interface
+- Import all available Tokyo-area lines and stations from ODPT or licensed GTFS static data
+- Poll licensed operation information every 60 seconds in development or every 1-5 minutes in production, depending on provider terms
 - Add timestamp freshness indicators and stale-data warnings
 - Add station search and line filtering
 - Add route impact summaries

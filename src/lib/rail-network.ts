@@ -32,7 +32,7 @@ export const lines: RailLine[] = [
     id: "denentoshi",
     name: "東急田園都市線",
     operator: "Tokyu",
-    color: "#24a26b",
+    color: "#20a288",
     stationIds: [
       "shibuya",
       "sangen-jaya",
@@ -45,7 +45,7 @@ export const lines: RailLine[] = [
     id: "hanzomon",
     name: "東京メトロ半蔵門線",
     operator: "Tokyo Metro",
-    color: "#7f5ab6",
+    color: "#8f76d6",
     stationIds: [
       "shibuya",
       "omote-sando",
@@ -59,7 +59,7 @@ export const lines: RailLine[] = [
     id: "yamanote",
     name: "JR山手線",
     operator: "JR East",
-    color: "#79b842",
+    color: "#9acd32",
     stationIds: [
       "shibuya",
       "shinjuku",
@@ -89,7 +89,7 @@ export const lines: RailLine[] = [
     id: "yokosuka",
     name: "横須賀線",
     operator: "JR East",
-    color: "#1f6fb2",
+    color: "#007ac0",
     stationIds: [
       "tokyo",
       "shinagawa",

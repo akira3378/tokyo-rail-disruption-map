@@ -39,3 +39,40 @@ body {
 button {
   font: inherit;
 }
+
+@keyframes rail-alert-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.36;
+  }
+}
+
+@keyframes rail-alert-halo {
+  0%,
+  100% {
+    opacity: 0.24;
+  }
+
+  50% {
+    opacity: 0.62;
+  }
+}
+
+.rail-alert-blink {
+  animation: rail-alert-blink 1.15s ease-in-out infinite;
+}
+
+.rail-alert-halo {
+  animation: rail-alert-halo 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-alert-blink,
+  .rail-alert-halo {
+    animation: none;
+  }
+}

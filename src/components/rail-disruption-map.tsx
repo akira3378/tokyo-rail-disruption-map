@@ -38,6 +38,7 @@ export function RailDisruptionMap({
 }: RailDisruptionMapProps) {
   const [scenarioId, setScenarioId] = useState(initialSnapshot.scenario.id);
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [hoveredSegmentId, setHoveredSegmentId] = useState<string | null>(null);
 
   const snapshot = useMemo(() => getRailwaySnapshot(scenarioId), [scenarioId]);
   const stationById = useMemo(
@@ -66,8 +67,9 @@ export function RailDisruptionMap({
               Tokyo Rail Disruption Map
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Simulated operations dashboard for selected Tokyo metropolitan rail
-              lines. No scraping, no live third-party traffic data.
+              Simulated operations dashboard with a provider boundary for ODPT
+              or GTFS-RT data. No scraping, no live third-party traffic data in
+              this MVP.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
@@ -107,7 +109,9 @@ export function RailDisruptionMap({
                 stations={snapshot.stations}
                 stationById={stationById}
                 selection={selection}
+                hoveredSegmentId={hoveredSegmentId}
                 onSelect={setSelection}
+                onHover={setHoveredSegmentId}
               />
             </div>
           </div>
@@ -128,13 +132,17 @@ function RailSvg({
   stations,
   stationById,
   selection,
+  hoveredSegmentId,
   onSelect,
+  onHover,
 }: {
   lines: LineViewModel[];
   stations: Station[];
   stationById: Map<string, Station>;
   selection: Selection | null;
+  hoveredSegmentId: string | null;
   onSelect: (selection: Selection) => void;
+  onHover: (segmentId: string | null) => void;
 }) {
   return (
     <svg
@@ -178,10 +186,13 @@ function RailSvg({
               segment={segment}
               stationById={stationById}
               selected={
-                selection?.type === "segment" &&
-                selection.segmentId === segment.id
+                (selection?.type === "segment" &&
+                  selection.segmentId === segment.id) ||
+                (selection?.type === "line" && selection.lineId === line.id)
               }
+              hovered={hoveredSegmentId === segment.id}
               onSelect={onSelect}
+              onHover={onHover}
             />
           ))}
         </g>
@@ -215,13 +226,17 @@ function RailSegment({
   segment,
   stationById,
   selected,
+  hovered,
   onSelect,
+  onHover,
 }: {
   line: LineViewModel;
   segment: SegmentViewModel;
   stationById: Map<string, Station>;
   selected: boolean;
+  hovered: boolean;
   onSelect: (selection: Selection) => void;
+  onHover: (segmentId: string | null) => void;
 }) {
   const from = stationById.get(segment.fromStationId);
   const to = stationById.get(segment.toStationId);
@@ -231,6 +246,7 @@ function RailSegment({
   }
 
   const isNormal = segment.status === "normal";
+  const isDisrupted = !isNormal;
   const strokeClass = isNormal ? "" : statusStrokeClasses[segment.status];
   const strokeDasharray =
     segment.status === "reduced"
@@ -246,9 +262,35 @@ function RailSegment({
         y1={from.y}
         x2={to.x}
         y2={to.y}
+        stroke={line.color}
+        strokeLinecap="round"
+        strokeWidth={selected || hovered ? 15 : 11}
+        opacity={isDisrupted ? 0.26 : selected || hovered ? 0.2 : 0}
+        pointerEvents="none"
+      />
+      {isDisrupted ? (
+        <line
+          x1={from.x}
+          y1={from.y}
+          x2={to.x}
+          y2={to.y}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth={selected || hovered ? 18 : 15}
+          className={`${strokeClass} rail-alert-halo`}
+          pointerEvents="none"
+        />
+      ) : null}
+      <line
+        x1={from.x}
+        y1={from.y}
+        x2={to.x}
+        y2={to.y}
         stroke="transparent"
         strokeWidth="26"
         className="cursor-pointer"
+        onMouseEnter={() => onHover(segment.id)}
+        onMouseLeave={() => onHover(null)}
         onClick={() =>
           onSelect({ type: "segment", segmentId: segment.id, lineId: line.id })
         }
@@ -260,10 +302,14 @@ function RailSegment({
         y2={to.y}
         stroke={isNormal ? line.color : undefined}
         strokeLinecap="round"
-        strokeWidth={selected ? 12 : isNormal ? 7 : 10}
+        strokeWidth={selected ? 12 : hovered ? 10 : isNormal ? 7 : 10}
         strokeDasharray={strokeDasharray}
-        className={`${strokeClass} cursor-pointer transition-all`}
+        className={`${strokeClass} cursor-pointer transition-all ${
+          isDisrupted ? "rail-alert-blink" : ""
+        }`}
         opacity={isNormal ? 0.86 : 1}
+        onMouseEnter={() => onHover(segment.id)}
+        onMouseLeave={() => onHover(null)}
         onClick={() =>
           onSelect({ type: "segment", segmentId: segment.id, lineId: line.id })
         }
@@ -281,6 +327,10 @@ function RailSegment({
           pointerEvents="none"
         />
       ) : null}
+      <title>
+        {line.name}: {from.name} - {to.name} /{" "}
+        {segment.incident?.title ?? statusDescriptions[segment.status]}
+      </title>
     </g>
   );
 }
@@ -352,7 +402,7 @@ function DetailPanel({
         />
         <DetailRow
           label="データ"
-          value="Mock scenario data only. Not live railway operations data."
+          value="Mock scenario data only. Real-time provider boundary is documented for ODPT or GTFS-RT."
         />
       </div>
     </section>
@@ -417,7 +467,14 @@ function LineStatusList({
                 {line.operator}
               </span>
             </span>
-            <StatusBadge status={line.status} />
+            <span className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: line.color }}
+                aria-hidden="true"
+              />
+              <StatusBadge status={line.status} />
+            </span>
           </button>
         ))}
       </div>

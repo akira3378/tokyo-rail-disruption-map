@@ -1,0 +1,111 @@
+import type { RailLine, Segment, Station } from "./types";
+
+export const stations: Station[] = [
+  { id: "shibuya", name: "渋谷", nameEn: "Shibuya", x: 420, y: 210 },
+  { id: "omote-sando", name: "表参道", nameEn: "Omote-sando", x: 490, y: 205 },
+  { id: "aoyama-itchome", name: "青山一丁目", nameEn: "Aoyama-itchome", x: 560, y: 200 },
+  { id: "nagatacho", name: "永田町", nameEn: "Nagatacho", x: 630, y: 195 },
+  { id: "otemachi", name: "大手町", nameEn: "Otemachi", x: 720, y: 185 },
+  { id: "oshiage", name: "押上", nameEn: "Oshiage", x: 835, y: 150 },
+  { id: "sangen-jaya", name: "三軒茶屋", nameEn: "Sangen-jaya", x: 340, y: 250 },
+  { id: "futako-tamagawa", name: "二子玉川", nameEn: "Futako-tamagawa", x: 235, y: 315 },
+  { id: "mizonokuchi", name: "溝の口", nameEn: "Mizonokuchi", x: 160, y: 370 },
+  { id: "machida", name: "南町田", nameEn: "Minami-machida", x: 80, y: 445 },
+  { id: "shinjuku", name: "新宿", nameEn: "Shinjuku", x: 420, y: 115 },
+  { id: "ikebukuro", name: "池袋", nameEn: "Ikebukuro", x: 515, y: 70 },
+  { id: "ueno", name: "上野", nameEn: "Ueno", x: 690, y: 95 },
+  { id: "tokyo", name: "東京", nameEn: "Tokyo", x: 720, y: 230 },
+  { id: "shinagawa", name: "品川", nameEn: "Shinagawa", x: 570, y: 340 },
+  { id: "meguro", name: "目黒", nameEn: "Meguro", x: 470, y: 330 },
+  { id: "osaki", name: "大崎", nameEn: "Osaki", x: 535, y: 380 },
+  { id: "kawasaki", name: "川崎", nameEn: "Kawasaki", x: 450, y: 475 },
+  { id: "musashi-kosugi", name: "武蔵小杉", nameEn: "Musashi-kosugi", x: 355, y: 425 },
+  { id: "noborito", name: "登戸", nameEn: "Noborito", x: 260, y: 380 },
+  { id: "tachikawa", name: "立川", nameEn: "Tachikawa", x: 90, y: 310 },
+  { id: "yokohama", name: "横浜", nameEn: "Yokohama", x: 375, y: 555 },
+  { id: "ofuna", name: "大船", nameEn: "Ofuna", x: 285, y: 655 },
+  { id: "kamakura", name: "鎌倉", nameEn: "Kamakura", x: 220, y: 705 },
+];
+
+export const lines: RailLine[] = [
+  {
+    id: "denentoshi",
+    name: "東急田園都市線",
+    operator: "Tokyu",
+    color: "#24a26b",
+    stationIds: [
+      "shibuya",
+      "sangen-jaya",
+      "futako-tamagawa",
+      "mizonokuchi",
+      "machida",
+    ],
+  },
+  {
+    id: "hanzomon",
+    name: "東京メトロ半蔵門線",
+    operator: "Tokyo Metro",
+    color: "#7f5ab6",
+    stationIds: [
+      "shibuya",
+      "omote-sando",
+      "aoyama-itchome",
+      "nagatacho",
+      "otemachi",
+      "oshiage",
+    ],
+  },
+  {
+    id: "yamanote",
+    name: "JR山手線",
+    operator: "JR East",
+    color: "#79b842",
+    stationIds: [
+      "shibuya",
+      "shinjuku",
+      "ikebukuro",
+      "ueno",
+      "tokyo",
+      "shinagawa",
+      "osaki",
+      "meguro",
+      "shibuya",
+    ],
+  },
+  {
+    id: "nambu",
+    name: "JR南武線",
+    operator: "JR East",
+    color: "#ffd400",
+    stationIds: [
+      "kawasaki",
+      "musashi-kosugi",
+      "mizonokuchi",
+      "noborito",
+      "tachikawa",
+    ],
+  },
+  {
+    id: "yokosuka",
+    name: "横須賀線",
+    operator: "JR East",
+    color: "#1f6fb2",
+    stationIds: [
+      "tokyo",
+      "shinagawa",
+      "musashi-kosugi",
+      "yokohama",
+      "ofuna",
+      "kamakura",
+    ],
+  },
+];
+
+export const segments: Segment[] = lines.flatMap((line) =>
+  line.stationIds.slice(0, -1).map((stationId, index) => ({
+    id: `${line.id}-${stationId}-${line.stationIds[index + 1]}`,
+    lineId: line.id,
+    fromStationId: stationId,
+    toStationId: line.stationIds[index + 1],
+  })),
+);

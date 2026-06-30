@@ -173,11 +173,20 @@ ODPT_API_KEY=your_key npm run import:odpt
 
 The script fetches documented ODPT resources and stores JSON in `data/odpt/raw/`:
 
+- `odpt:Operator`
 - `odpt:Railway`
 - `odpt:Station`
 - `odpt:TrainInformation`
+- `odpt:StationTimetable`
+- `odpt:TrainTimetable`
 
 This is intentionally separate from the UI. The next step would be a mapper that converts provider-specific records into this app's `RailwaySnapshot` model.
+
+After importing, validate local JSON readiness with:
+
+```bash
+npm run validate:odpt
+```
 
 ## Future Extensions
 

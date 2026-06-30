@@ -1,11 +1,17 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+
+await loadLocalEnvFiles([".env.local", ".env"]);
 
 const apiKey = process.env.ODPT_API_KEY;
 const apiBase = process.env.ODPT_API_BASE ?? "https://api.odpt.org/api/v4";
 const outputDir = process.env.ODPT_OUTPUT_DIR ?? "data/odpt/raw";
 
 const resources = [
+  {
+    name: "operators",
+    path: "odpt:Operator",
+  },
   {
     name: "railways",
     path: "odpt:Railway",
@@ -17,6 +23,14 @@ const resources = [
   {
     name: "train-information",
     path: "odpt:TrainInformation",
+  },
+  {
+    name: "station-timetables",
+    path: "odpt:StationTimetable",
+  },
+  {
+    name: "train-timetables",
+    path: "odpt:TrainTimetable",
   },
 ];
 
@@ -45,5 +59,39 @@ for (const resource of resources) {
   const filePath = join(outputDir, `${resource.name}.json`);
 
   await writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-  console.log(`Wrote ${filePath} (${Array.isArray(payload) ? payload.length : 1} records)`);
+  console.log(
+    `Wrote ${filePath} (${Array.isArray(payload) ? payload.length : 1} records)`,
+  );
+}
+
+async function loadLocalEnvFiles(paths) {
+  for (const path of paths) {
+    let content;
+
+    try {
+      content = await readFile(path, "utf8");
+    } catch {
+      continue;
+    }
+
+    for (const line of content.split("\n")) {
+      const trimmed = line.trim();
+
+      if (!trimmed || trimmed.startsWith("#")) {
+        continue;
+      }
+
+      const separatorIndex = trimmed.indexOf("=");
+
+      if (separatorIndex < 1) {
+        continue;
+      }
+
+      const key = trimmed.slice(0, separatorIndex).trim();
+      const rawValue = trimmed.slice(separatorIndex + 1).trim();
+      const value = rawValue.replace(/^["']|["']$/g, "");
+
+      process.env[key] ??= value;
+    }
+  }
 }

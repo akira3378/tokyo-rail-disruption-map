@@ -16,9 +16,12 @@ The best legal first candidate for Tokyo-area railway data is the Public Transpo
 
 The useful entity groups for this application are:
 
+- `odpt:Operator`: operator metadata
 - `odpt:Railway`: railway line metadata
 - `odpt:Station`: station metadata
 - `odpt:TrainInformation`: operation information notices
+- `odpt:StationTimetable`: station-level timetable metadata where available
+- `odpt:TrainTimetable`: train-level timetable metadata where available
 
 The implementation in this repository includes `scripts/import-odpt.mjs`, which can store these datasets as JSON once an ODPT API key is provided.
 

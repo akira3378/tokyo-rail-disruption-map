@@ -10,6 +10,18 @@ When importing real open data, use:
 ODPT_API_KEY=your_key npm run import:odpt
 ```
 
+Or create `.env.local` in the project root:
+
+```text
+ODPT_API_KEY=your_key
+```
+
+Then run:
+
+```bash
+npm run import:odpt
+```
+
 The importer writes raw JSON files to:
 
 ```text

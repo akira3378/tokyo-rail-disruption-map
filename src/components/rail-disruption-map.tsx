@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getRailwaySnapshot } from "@/lib/data-access";
 import {
   statusStrokeClasses,
@@ -32,6 +32,7 @@ const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 2.5;
 const ZOOM_STEP = 0.25;
 const DEFAULT_ZOOM = 1;
+const FOCUS_PADDING = 72;
 
 type RailDisruptionMapProps = {
   initialSnapshot: RailwaySnapshot;
@@ -82,6 +83,57 @@ export function RailDisruptionMap({
   const abnormalCount = snapshot.lines.filter(
     (line) => line.status !== "normal",
   ).length;
+
+  useEffect(() => {
+    const viewport = mapViewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    const fitZoom = getFitZoom(viewport);
+    setZoom(fitZoom);
+  }, []);
+
+  const focusMapBounds = (bounds: MapBounds) => {
+    const viewport = mapViewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    const nextZoom = getBoundsZoom(viewport, bounds);
+    setZoom(nextZoom);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const left = Math.max(0, (bounds.minX - FOCUS_PADDING) * nextZoom);
+        const top = Math.max(0, (bounds.minY - FOCUS_PADDING) * nextZoom);
+
+        viewport.scrollTo({ left, top, behavior: "smooth" });
+      });
+    });
+  };
+
+  const selectLine = (lineId: string) => {
+    setSelection({ type: "line", lineId });
+
+    const bounds = getLineBounds(snapshot.lines, stationById, lineId);
+
+    if (bounds) {
+      focusMapBounds(bounds);
+    }
+  };
+
+  const selectSegment = (segmentId: string, lineId: string) => {
+    setSelection({ type: "segment", segmentId, lineId });
+
+    const bounds = getSegmentBounds(snapshot.lines, stationById, segmentId, lineId);
+
+    if (bounds) {
+      focusMapBounds(bounds);
+    }
+  };
 
   const resetMapView = () => {
     const viewport = mapViewportRef.current;
@@ -245,7 +297,7 @@ export function RailDisruptionMap({
                   hoveredSegmentId={hoveredSegmentId}
                   statusText={statusText}
                   zoom={zoom}
-                  onSelect={setSelection}
+                  onSelectSegment={selectSegment}
                   onHover={setHoveredSegmentId}
                 />
               </div>
@@ -265,7 +317,7 @@ export function RailDisruptionMap({
               title={copy.lines}
               lines={snapshot.lines}
               statusText={statusText}
-              onSelect={setSelection}
+              onSelectLine={selectLine}
             />
           </aside>
         </section>
@@ -283,7 +335,7 @@ function RailSvg({
   hoveredSegmentId,
   statusText,
   zoom,
-  onSelect,
+  onSelectSegment,
   onHover,
 }: {
   ariaLabel: string;
@@ -294,7 +346,7 @@ function RailSvg({
   hoveredSegmentId: string | null;
   statusText: Record<RailStatus, { label: string; description: string }>;
   zoom: number;
-  onSelect: (selection: Selection) => void;
+  onSelectSegment: (segmentId: string, lineId: string) => void;
   onHover: (segmentId: string | null) => void;
 }) {
   return (
@@ -351,7 +403,7 @@ function RailSvg({
               }
               hovered={hoveredSegmentId === segment.id}
               statusText={statusText}
-              onSelect={onSelect}
+              onSelectSegment={onSelectSegment}
               onHover={onHover}
             />
           ))}
@@ -388,7 +440,7 @@ function RailSegment({
   selected,
   hovered,
   statusText,
-  onSelect,
+  onSelectSegment,
   onHover,
 }: {
   line: LineViewModel;
@@ -397,7 +449,7 @@ function RailSegment({
   selected: boolean;
   hovered: boolean;
   statusText: Record<RailStatus, { label: string; description: string }>;
-  onSelect: (selection: Selection) => void;
+  onSelectSegment: (segmentId: string, lineId: string) => void;
   onHover: (segmentId: string | null) => void;
 }) {
   const from = stationById.get(segment.fromStationId);
@@ -457,9 +509,7 @@ function RailSegment({
         className="cursor-pointer"
         onMouseEnter={() => onHover(segment.id)}
         onMouseLeave={() => onHover(null)}
-        onClick={() =>
-          onSelect({ type: "segment", segmentId: segment.id, lineId: line.id })
-        }
+        onClick={() => onSelectSegment(segment.id, line.id)}
       />
       <line
         x1={from.x}
@@ -477,9 +527,7 @@ function RailSegment({
         opacity={isNormal ? 0.86 : 1}
         onMouseEnter={() => onHover(segment.id)}
         onMouseLeave={() => onHover(null)}
-        onClick={() =>
-          onSelect({ type: "segment", segmentId: segment.id, lineId: line.id })
-        }
+        onClick={() => onSelectSegment(segment.id, line.id)}
       />
       {segment.status === "suspended" ? (
         <line
@@ -690,12 +738,12 @@ function LineStatusList({
   title,
   lines,
   statusText,
-  onSelect,
+  onSelectLine,
 }: {
   title: string;
   lines: LineViewModel[];
   statusText: Record<RailStatus, { label: string; description: string }>;
-  onSelect: (selection: Selection) => void;
+  onSelectLine: (lineId: string) => void;
 }) {
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
@@ -705,7 +753,7 @@ function LineStatusList({
           <button
             key={line.id}
             type="button"
-            onClick={() => onSelect({ type: "line", lineId: line.id })}
+            onClick={() => onSelectLine(line.id)}
             className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
           >
             <span className="min-w-0">
@@ -934,4 +982,81 @@ function getFitZoom(viewport: HTMLDivElement) {
   const heightRatio = viewport.clientHeight / MAP_HEIGHT;
 
   return clampZoom(Math.min(DEFAULT_ZOOM, widthRatio, heightRatio));
+}
+
+type MapBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+function getBoundsZoom(viewport: HTMLDivElement, bounds: MapBounds) {
+  const width = bounds.maxX - bounds.minX + FOCUS_PADDING * 2;
+  const height = bounds.maxY - bounds.minY + FOCUS_PADDING * 2;
+  const widthRatio = viewport.clientWidth / width;
+  const heightRatio = viewport.clientHeight / height;
+
+  return clampZoom(Math.min(MAX_ZOOM, widthRatio, heightRatio));
+}
+
+function getLineBounds(
+  lines: LineViewModel[],
+  stationById: Map<string, Station>,
+  lineId: string,
+) {
+  const line = lines.find((item) => item.id === lineId);
+
+  if (!line) {
+    return undefined;
+  }
+
+  return getStationIdsBounds(line.stationIds, stationById);
+}
+
+function getSegmentBounds(
+  lines: LineViewModel[],
+  stationById: Map<string, Station>,
+  segmentId: string,
+  lineId: string,
+) {
+  const line = lines.find((item) => item.id === lineId);
+  const segment = line?.segments.find((item) => item.id === segmentId);
+
+  if (!segment) {
+    return undefined;
+  }
+
+  return getStationIdsBounds(
+    [segment.fromStationId, segment.toStationId],
+    stationById,
+  );
+}
+
+function getStationIdsBounds(
+  stationIds: string[],
+  stationById: Map<string, Station>,
+): MapBounds | undefined {
+  const stations = stationIds
+    .map((stationId) => stationById.get(stationId))
+    .filter((station): station is Station => Boolean(station));
+
+  if (stations.length === 0) {
+    return undefined;
+  }
+
+  return stations.reduce<MapBounds>(
+    (bounds, station) => ({
+      minX: Math.min(bounds.minX, station.x),
+      maxX: Math.max(bounds.maxX, station.x),
+      minY: Math.min(bounds.minY, station.y),
+      maxY: Math.max(bounds.maxY, station.y),
+    }),
+    {
+      minX: stations[0].x,
+      maxX: stations[0].x,
+      minY: stations[0].y,
+      maxY: stations[0].y,
+    },
+  );
 }

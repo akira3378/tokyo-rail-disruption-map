@@ -1,21 +1,5 @@
 import type { RailStatus } from "./types";
 
-export const statusLabels: Record<RailStatus, string> = {
-  normal: "正常",
-  delayed: "延误",
-  suspended: "停运",
-  reduced: "运行减少",
-  unknown: "未知",
-};
-
-export const statusDescriptions: Record<RailStatus, string> = {
-  normal: "通常運行",
-  delayed: "遅延",
-  suspended: "運転見合わせ",
-  reduced: "運転本数減",
-  unknown: "確認中",
-};
-
 export const statusStrokeClasses: Record<RailStatus, string> = {
   normal: "stroke-slate-400",
   delayed: "stroke-amber-500",

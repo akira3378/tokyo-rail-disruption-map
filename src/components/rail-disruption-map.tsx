@@ -3,11 +3,17 @@
 import { useMemo, useState } from "react";
 import { getRailwaySnapshot } from "@/lib/data-access";
 import {
-  statusBadgeClasses,
-  statusDescriptions,
-  statusLabels,
   statusStrokeClasses,
 } from "@/lib/status";
+import {
+  copies,
+  localeLabels,
+  scenarioCopies,
+  statusCopies,
+  themeLabels,
+  type Locale,
+  type ThemeMode,
+} from "@/lib/i18n";
 import type {
   DemoScenario,
   Incident,
@@ -39,16 +45,20 @@ export function RailDisruptionMap({
   const [scenarioId, setScenarioId] = useState(initialSnapshot.scenario.id);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [hoveredSegmentId, setHoveredSegmentId] = useState<string | null>(null);
+  const [locale, setLocale] = useState<Locale>("zh");
+  const [theme, setTheme] = useState<ThemeMode>("light");
 
   const snapshot = useMemo(() => getRailwaySnapshot(scenarioId), [scenarioId]);
+  const copy = copies[locale];
+  const statusText = statusCopies[locale];
   const stationById = useMemo(
     () => new Map(snapshot.stations.map((station) => [station.id, station])),
     [snapshot.stations],
   );
 
   const selectedDetail = useMemo(
-    () => buildDetailModel(snapshot, selection),
-    [snapshot, selection],
+    () => buildDetailModel(snapshot, selection, locale),
+    [snapshot, selection, locale],
   );
 
   const abnormalCount = snapshot.lines.filter(
@@ -56,44 +66,57 @@ export function RailDisruptionMap({
   ).length;
 
   return (
-    <div className="min-h-screen bg-[#f6f7f4] text-slate-950">
+    <div
+      className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"
+      data-theme={theme}
+      lang={copy.htmlLang}
+    >
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-slate-300 pb-4 md:flex-row md:items-end md:justify-between">
+        <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
-              Portfolio MVP
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.eyebrow}
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-slate-950 md:text-4xl">
-              Tokyo Rail Disruption Map
+            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[var(--foreground)] md:text-4xl">
+              {copy.title}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Simulated operations dashboard with a provider boundary for ODPT
-              or GTFS-RT data. No scraping, no live third-party traffic data in
-              this MVP.
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
+              {copy.subtitle}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-            <Metric label="対象路線" value={String(snapshot.lines.length)} />
-            <Metric label="異常路線" value={String(abnormalCount)} />
-            <Metric
-              label="更新"
-              value={formatTime(snapshot.scenario.incidents[0]?.updatedAt)}
+          <div className="grid gap-3 md:justify-items-end">
+            <Toolbar
+              copy={copy}
+              locale={locale}
+              theme={theme}
+              onLocaleChange={setLocale}
+              onThemeChange={setTheme}
             />
+            <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+            <Metric label={copy.metrics.lines} value={String(snapshot.lines.length)} />
+            <Metric label={copy.metrics.abnormal} value={String(abnormalCount)} />
+            <Metric
+              label={copy.metrics.updated}
+              value={formatTime(snapshot.scenario.incidents[0]?.updatedAt, locale, copy.noTime)}
+            />
+            </div>
           </div>
         </header>
 
         <section className="grid flex-1 gap-4 py-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex min-h-[620px] flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 p-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-h-[620px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--panel-strong)] p-3 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
-                <h2 className="text-base font-semibold text-slate-900">
-                  Simplified Network View
+                <h2 className="text-base font-semibold text-[var(--foreground)]">
+                  {copy.map.title}
                 </h2>
-                <p className="mt-1 text-xs text-slate-600">
-                  Custom schematic coordinates for demo use only.
+                <p className="mt-1 text-xs text-[var(--muted)]">
+                  {copy.map.description}
                 </p>
               </div>
               <ScenarioSwitcher
+                label={copy.map.scenario}
+                locale={locale}
                 scenarioId={scenarioId}
                 scenarios={scenarios}
                 onChange={(nextScenarioId) => {
@@ -103,13 +126,15 @@ export function RailDisruptionMap({
               />
             </div>
 
-            <div className="flex-1 overflow-auto bg-[#fbfbf7]">
+            <div className="flex-1 overflow-auto bg-[var(--map-bg)]">
               <RailSvg
+                ariaLabel={copy.map.ariaLabel}
                 lines={snapshot.lines}
                 stations={snapshot.stations}
                 stationById={stationById}
                 selection={selection}
                 hoveredSegmentId={hoveredSegmentId}
+                statusText={statusText}
                 onSelect={setSelection}
                 onHover={setHoveredSegmentId}
               />
@@ -117,9 +142,20 @@ export function RailDisruptionMap({
           </div>
 
           <aside className="flex flex-col gap-4">
-            <DetailPanel detail={selectedDetail} scenario={snapshot.scenario} />
-            <Legend />
-            <LineStatusList lines={snapshot.lines} onSelect={setSelection} />
+            <DetailPanel
+              detail={selectedDetail}
+              scenario={snapshot.scenario}
+              copy={copy}
+              locale={locale}
+              statusText={statusText}
+            />
+            <Legend title={copy.legend} statusText={statusText} />
+            <LineStatusList
+              title={copy.lines}
+              lines={snapshot.lines}
+              statusText={statusText}
+              onSelect={setSelection}
+            />
           </aside>
         </section>
       </div>
@@ -128,30 +164,34 @@ export function RailDisruptionMap({
 }
 
 function RailSvg({
+  ariaLabel,
   lines,
   stations,
   stationById,
   selection,
   hoveredSegmentId,
+  statusText,
   onSelect,
   onHover,
 }: {
+  ariaLabel: string;
   lines: LineViewModel[];
   stations: Station[];
   stationById: Map<string, Station>;
   selection: Selection | null;
   hoveredSegmentId: string | null;
+  statusText: Record<RailStatus, { label: string; description: string }>;
   onSelect: (selection: Selection) => void;
   onHover: (segmentId: string | null) => void;
 }) {
   return (
     <svg
       role="img"
-      aria-label="Simplified Tokyo rail disruption map"
+      aria-label={ariaLabel}
       className="h-full min-h-[620px] w-full min-w-[900px]"
       viewBox="0 0 940 760"
     >
-      <rect width="940" height="760" fill="#fbfbf7" />
+      <rect width="940" height="760" fill="var(--map-bg)" />
       <g opacity="0.42">
         {Array.from({ length: 10 }).map((_, index) => (
           <line
@@ -160,7 +200,7 @@ function RailSvg({
             x2="900"
             y1={80 + index * 65}
             y2={80 + index * 65}
-            stroke="#dfe5e4"
+            stroke="var(--map-grid)"
             strokeWidth="1"
           />
         ))}
@@ -171,7 +211,7 @@ function RailSvg({
             x2={80 + index * 100}
             y1="50"
             y2="720"
-            stroke="#dfe5e4"
+            stroke="var(--map-grid)"
             strokeWidth="1"
           />
         ))}
@@ -191,6 +231,7 @@ function RailSvg({
                 (selection?.type === "line" && selection.lineId === line.id)
               }
               hovered={hoveredSegmentId === segment.id}
+              statusText={statusText}
               onSelect={onSelect}
               onHover={onHover}
             />
@@ -204,14 +245,14 @@ function RailSvg({
             cx={station.x}
             cy={station.y}
             r="5.5"
-            fill="#ffffff"
-            stroke="#1f2937"
+            fill="var(--station-fill)"
+            stroke="var(--station-stroke)"
             strokeWidth="2"
           />
           <text
             x={station.x + 9}
             y={station.y - 9}
-            className="select-none fill-slate-800 text-[12px] font-semibold"
+            className="select-none fill-[var(--map-label)] text-[12px] font-semibold"
           >
             {station.name}
           </text>
@@ -227,6 +268,7 @@ function RailSegment({
   stationById,
   selected,
   hovered,
+  statusText,
   onSelect,
   onHover,
 }: {
@@ -235,6 +277,7 @@ function RailSegment({
   stationById: Map<string, Station>;
   selected: boolean;
   hovered: boolean;
+  statusText: Record<RailStatus, { label: string; description: string }>;
   onSelect: (selection: Selection) => void;
   onHover: (segmentId: string | null) => void;
 }) {
@@ -248,6 +291,9 @@ function RailSegment({
   const isNormal = segment.status === "normal";
   const isDisrupted = !isNormal;
   const strokeClass = isNormal ? "" : statusStrokeClasses[segment.status];
+  const segmentLabel = `${line.name}: ${from.name} - ${to.name} / ${
+    segment.incident?.title ?? statusText[segment.status].description
+  }`;
   const strokeDasharray =
     segment.status === "reduced"
       ? "10 10"
@@ -288,6 +334,7 @@ function RailSegment({
         y2={to.y}
         stroke="transparent"
         strokeWidth="26"
+        aria-label={segmentLabel}
         className="cursor-pointer"
         onMouseEnter={() => onHover(segment.id)}
         onMouseLeave={() => onHover(null)}
@@ -304,6 +351,7 @@ function RailSegment({
         strokeLinecap="round"
         strokeWidth={selected ? 12 : hovered ? 10 : isNormal ? 7 : 10}
         strokeDasharray={strokeDasharray}
+        aria-hidden="true"
         className={`${strokeClass} cursor-pointer transition-all ${
           isDisrupted ? "rail-alert-blink" : ""
         }`}
@@ -327,34 +375,34 @@ function RailSegment({
           pointerEvents="none"
         />
       ) : null}
-      <title>
-        {line.name}: {from.name} - {to.name} /{" "}
-        {segment.incident?.title ?? statusDescriptions[segment.status]}
-      </title>
     </g>
   );
 }
 
 function ScenarioSwitcher({
+  label,
+  locale,
   scenarioId,
   scenarios,
   onChange,
 }: {
+  label: string;
+  locale?: Locale;
   scenarioId: string;
   scenarios: DemoScenario[];
   onChange: (scenarioId: string) => void;
 }) {
   return (
-    <label className="flex w-full flex-col gap-1 text-xs font-semibold text-slate-600 md:w-72">
-      Demo scenario
+    <label className="flex w-full flex-col gap-1 text-xs font-semibold text-[var(--muted)] md:w-72">
+      {label}
       <select
         value={scenarioId}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-950 outline-none ring-teal-600 transition focus:ring-2"
+        className="h-10 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm font-medium text-[var(--foreground)] outline-none ring-[var(--accent)] transition focus:ring-2"
       >
         {scenarios.map((scenario) => (
           <option key={scenario.id} value={scenario.id}>
-            {scenario.name}
+            {getScenarioText(scenario, locale ?? "zh").name}
           </option>
         ))}
       </select>
@@ -365,51 +413,70 @@ function ScenarioSwitcher({
 function DetailPanel({
   detail,
   scenario,
+  copy,
+  locale,
+  statusText,
 }: {
   detail?: DetailModel;
   scenario: DemoScenario;
+  copy: typeof copies[Locale];
+  locale: Locale;
+  statusText: Record<RailStatus, { label: string; description: string }>;
 }) {
+  const scenarioText = getScenarioText(scenario, locale);
+
   return (
-    <section className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
+    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
-            Detail
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+            {copy.detail.title}
           </p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950">
-            {detail?.title ?? "路線または区間を選択"}
+          <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
+            {detail?.title ?? copy.detail.emptyTitle}
           </h2>
         </div>
-        {detail ? <StatusBadge status={detail.status} /> : null}
+        {detail ? (
+          <StatusBadge
+            status={detail.status}
+            label={statusText[detail.status].label}
+          />
+        ) : null}
       </div>
 
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        {detail?.subtitle ?? scenario.description}
+      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+        {detail?.subtitle ?? scenarioText.description}
       </p>
 
       <div className="mt-4 grid gap-3 text-sm">
         <DetailRow
-          label="影響範囲"
-          value={detail?.affectedArea ?? "選択後に表示"}
+          label={copy.detail.affectedArea}
+          value={detail?.affectedArea ?? copy.detail.emptyAffectedArea}
         />
         <DetailRow
-          label="理由"
-          value={detail?.incident?.reason ?? "現在表示できる異常情報はありません。"}
+          label={copy.detail.reason}
+          value={detail?.incident?.reason ?? copy.detail.emptyReason}
         />
         <DetailRow
-          label="更新時刻"
-          value={formatDateTime(detail?.incident?.updatedAt)}
+          label={copy.detail.updatedAt}
+          value={formatDateTime(detail?.incident?.updatedAt, copy)}
         />
         <DetailRow
-          label="データ"
-          value="Mock scenario data only. Real-time provider boundary is documented for ODPT or GTFS-RT."
+          label={copy.detail.data}
+          value={copy.detail.dataPolicy}
         />
       </div>
     </section>
   );
 }
 
-function Legend() {
+function Legend({
+  title,
+  statusText,
+}: {
+  title: string;
+  statusText: Record<RailStatus, { label: string; description: string }>;
+}) {
   const statuses: RailStatus[] = [
     "normal",
     "delayed",
@@ -419,8 +486,8 @@ function Legend() {
   ];
 
   return (
-    <section className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-slate-950">Status Legend</h2>
+    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
+      <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
         {statuses.map((status) => (
           <div key={status} className="flex items-center gap-2">
@@ -433,7 +500,7 @@ function Legend() {
                 status === "unknown" ? "bg-slate-700" : ""
               }`}
             />
-            <span className="text-slate-700">{statusLabels[status]}</span>
+            <span className="text-[var(--muted)]">{statusText[status].label}</span>
           </div>
         ))}
       </div>
@@ -442,28 +509,32 @@ function Legend() {
 }
 
 function LineStatusList({
+  title,
   lines,
+  statusText,
   onSelect,
 }: {
+  title: string;
   lines: LineViewModel[];
+  statusText: Record<RailStatus, { label: string; description: string }>;
   onSelect: (selection: Selection) => void;
 }) {
   return (
-    <section className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-slate-950">Lines</h2>
+    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
+      <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
       <div className="mt-3 grid gap-2">
         {lines.map((line) => (
           <button
             key={line.id}
             type="button"
             onClick={() => onSelect({ type: "line", lineId: line.id })}
-            className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left transition hover:border-teal-500 hover:bg-white"
+            className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
           >
             <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-slate-950">
+              <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
                 {line.name}
               </span>
-              <span className="block text-xs text-slate-500">
+              <span className="block text-xs text-[var(--muted)]">
                 {line.operator}
               </span>
             </span>
@@ -473,7 +544,7 @@ function LineStatusList({
                 style={{ backgroundColor: line.color }}
                 aria-hidden="true"
               />
-              <StatusBadge status={line.status} />
+              <StatusBadge status={line.status} label={statusText[line.status].label} />
             </span>
           </button>
         ))}
@@ -482,21 +553,21 @@ function LineStatusList({
   );
 }
 
-function StatusBadge({ status }: { status: RailStatus }) {
+function StatusBadge({ status, label }: { status: RailStatus; label?: string }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${statusBadgeClasses[status]}`}
+      className={`status-badge status-badge-${status}`}
     >
-      {statusLabels[status]}
+      {label ?? statusCopies.zh[status].label}
     </span>
   );
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-300 bg-white px-3 py-2">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-0.5 text-base font-semibold text-slate-950">
+    <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2">
+      <div className="text-xs font-medium text-[var(--muted)]">{label}</div>
+      <div className="mt-0.5 text-base font-semibold text-[var(--foreground)]">
         {value}
       </div>
     </div>
@@ -506,10 +577,10 @@ function Metric({ label, value }: { label: string; value: string }) {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
         {label}
       </dt>
-      <dd className="mt-1 leading-6 text-slate-800">{value}</dd>
+      <dd className="mt-1 leading-6 text-[var(--foreground)]">{value}</dd>
     </div>
   );
 }
@@ -517,10 +588,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function buildDetailModel(
   snapshot: RailwaySnapshot,
   selection: Selection | null,
+  locale: Locale,
 ): DetailModel | undefined {
   if (!selection) {
     return undefined;
   }
+
+  const statusText = statusCopies[locale];
 
   if (selection.type === "line") {
     const line = snapshot.lines.find((item) => item.id === selection.lineId);
@@ -531,10 +605,10 @@ function buildDetailModel(
 
     return {
       title: line.name,
-      subtitle: `${line.operator} / ${statusDescriptions[line.status]}`,
+      subtitle: `${line.operator} / ${statusText[line.status].description}`,
       status: line.status,
       incident: line.incident,
-      affectedArea: line.incident?.affectedArea ?? "全線に異常情報なし",
+      affectedArea: line.incident?.affectedArea ?? copies[locale].detail.noLineIncident,
     };
   }
 
@@ -559,33 +633,116 @@ function buildDetailModel(
 
   return {
     title: `${line.name} ${stationRange}`,
-    subtitle: statusDescriptions[segment.status],
+    subtitle: statusText[segment.status].description,
     status: segment.status,
     incident: segment.incident,
     affectedArea: segment.incident?.affectedArea ?? stationRange,
   };
 }
 
-function formatTime(value?: string) {
+function getScenarioText(scenario: DemoScenario, locale: Locale) {
+  return scenarioCopies[locale][scenario.id] ?? scenario;
+}
+
+function Toolbar({
+  copy,
+  locale,
+  theme,
+  onLocaleChange,
+  onThemeChange,
+}: {
+  copy: typeof copies[Locale];
+  locale: Locale;
+  theme: ThemeMode;
+  onLocaleChange: (locale: Locale) => void;
+  onThemeChange: (theme: ThemeMode) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <div className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1">
+        <span className="px-2 font-semibold text-[var(--muted)]">
+          {copy.controls.language}
+        </span>
+        {(["zh", "ja", "en"] as const).map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => onLocaleChange(item)}
+            className={`rounded px-2.5 py-1 font-semibold transition ${
+              locale === item
+                ? "bg-[var(--accent)] text-white"
+                : "text-[var(--muted)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {localeLabels[item]}
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1">
+        <span className="px-2 font-semibold text-[var(--muted)]">
+          {copy.controls.theme}
+        </span>
+        {(["light", "dark"] as const).map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => onThemeChange(item)}
+            className={`rounded px-2.5 py-1 font-semibold transition ${
+              theme === item
+                ? "bg-[var(--accent)] text-white"
+                : "text-[var(--muted)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {themeLabels[item][locale]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function formatTime(value: string | undefined, locale: Locale, fallback: string) {
   if (!value) {
-    return "--:--";
+    return fallback;
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
+  return new Intl.DateTimeFormat(localeToDateLocale(locale), {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Tokyo",
   }).format(new Date(value));
 }
 
-function formatDateTime(value?: string) {
+function formatDateTime(value: string | undefined, copy: typeof copies[Locale]) {
   if (!value) {
-    return "異常情報なし";
+    return copy.detail.emptyUpdatedAt;
   }
 
-  return new Intl.DateTimeFormat("ja-JP", {
+  return new Intl.DateTimeFormat(localeToDateLocaleFromHtml(copy.htmlLang), {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Tokyo",
   }).format(new Date(value));
+}
+
+function localeToDateLocale(locale: Locale) {
+  const locales: Record<Locale, string> = {
+    zh: "zh-CN",
+    ja: "ja-JP",
+    en: "en-US",
+  };
+
+  return locales[locale];
+}
+
+function localeToDateLocaleFromHtml(htmlLang: string) {
+  if (htmlLang === "ja") {
+    return "ja-JP";
+  }
+
+  if (htmlLang === "zh-CN") {
+    return "zh-CN";
+  }
+
+  return "en-US";
 }

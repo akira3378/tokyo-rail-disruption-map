@@ -28,6 +28,8 @@ This project demonstrates:
   - Reduced service
   - Unknown
 - Clickable lines and segments with detail panel
+- Chinese, Japanese, and English interface copy managed through a typed dictionary
+- Light and dark display modes using shared design tokens
 - Demo scenario switcher:
   - All normal
   - Tokyu Den-en-toshi Line section suspension from Shibuya to Futako-tamagawa

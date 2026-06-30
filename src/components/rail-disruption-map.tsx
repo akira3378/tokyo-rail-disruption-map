@@ -25,6 +25,13 @@ import type {
   Station,
 } from "@/lib/types";
 
+const MAP_WIDTH = 940;
+const MAP_HEIGHT = 760;
+const MIN_ZOOM = 0.75;
+const MAX_ZOOM = 2.5;
+const ZOOM_STEP = 0.25;
+const DEFAULT_ZOOM = 1;
+
 type RailDisruptionMapProps = {
   initialSnapshot: RailwaySnapshot;
   scenarios: DemoScenario[];
@@ -47,6 +54,7 @@ export function RailDisruptionMap({
   const [hoveredSegmentId, setHoveredSegmentId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>("zh");
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
 
   const snapshot = useMemo(() => getRailwaySnapshot(scenarioId), [scenarioId]);
   const copy = copies[locale];
@@ -114,30 +122,46 @@ export function RailDisruptionMap({
                   {copy.map.description}
                 </p>
               </div>
-              <ScenarioSwitcher
-                label={copy.map.scenario}
-                locale={locale}
-                scenarioId={scenarioId}
-                scenarios={scenarios}
-                onChange={(nextScenarioId) => {
-                  setScenarioId(nextScenarioId);
-                  setSelection(null);
-                }}
-              />
+              <div className="grid gap-2 md:justify-items-end">
+                <ScenarioSwitcher
+                  label={copy.map.scenario}
+                  locale={locale}
+                  scenarioId={scenarioId}
+                  scenarios={scenarios}
+                  onChange={(nextScenarioId) => {
+                    setScenarioId(nextScenarioId);
+                    setSelection(null);
+                  }}
+                />
+                <ZoomControls
+                  copy={copy}
+                  zoom={zoom}
+                  onZoomChange={setZoom}
+                />
+              </div>
             </div>
 
             <div className="flex-1 overflow-auto bg-[var(--map-bg)]">
-              <RailSvg
-                ariaLabel={copy.map.ariaLabel}
-                lines={snapshot.lines}
-                stations={snapshot.stations}
-                stationById={stationById}
-                selection={selection}
-                hoveredSegmentId={hoveredSegmentId}
-                statusText={statusText}
-                onSelect={setSelection}
-                onHover={setHoveredSegmentId}
-              />
+              <div
+                className="relative"
+                style={{
+                  width: `${MAP_WIDTH * zoom}px`,
+                  height: `${MAP_HEIGHT * zoom}px`,
+                }}
+              >
+                <RailSvg
+                  ariaLabel={copy.map.ariaLabel}
+                  lines={snapshot.lines}
+                  stations={snapshot.stations}
+                  stationById={stationById}
+                  selection={selection}
+                  hoveredSegmentId={hoveredSegmentId}
+                  statusText={statusText}
+                  zoom={zoom}
+                  onSelect={setSelection}
+                  onHover={setHoveredSegmentId}
+                />
+              </div>
             </div>
           </div>
 
@@ -171,6 +195,7 @@ function RailSvg({
   selection,
   hoveredSegmentId,
   statusText,
+  zoom,
   onSelect,
   onHover,
 }: {
@@ -181,6 +206,7 @@ function RailSvg({
   selection: Selection | null;
   hoveredSegmentId: string | null;
   statusText: Record<RailStatus, { label: string; description: string }>;
+  zoom: number;
   onSelect: (selection: Selection) => void;
   onHover: (segmentId: string | null) => void;
 }) {
@@ -188,7 +214,13 @@ function RailSvg({
     <svg
       role="img"
       aria-label={ariaLabel}
-      className="h-full min-h-[620px] w-full min-w-[900px]"
+      className="block"
+      style={{
+        width: `${MAP_WIDTH}px`,
+        height: `${MAP_HEIGHT}px`,
+        transform: `scale(${zoom})`,
+        transformOrigin: "top left",
+      }}
       viewBox="0 0 940 760"
     >
       <rect width="940" height="760" fill="var(--map-bg)" />
@@ -407,6 +439,64 @@ function ScenarioSwitcher({
         ))}
       </select>
     </label>
+  );
+}
+
+function ZoomControls({
+  copy,
+  zoom,
+  onZoomChange,
+}: {
+  copy: typeof copies[Locale];
+  zoom: number;
+  onZoomChange: (zoom: number) => void;
+}) {
+  const zoomPercent = Math.round(zoom * 100);
+
+  return (
+    <div
+      className="flex w-full items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1 text-xs md:w-72"
+      aria-label={copy.map.zoomLevel}
+    >
+      <span className="px-2 font-semibold text-[var(--muted)]">
+        {copy.map.zoomLevel}
+      </span>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onZoomChange(clampZoom(zoom - ZOOM_STEP))}
+          disabled={zoom <= MIN_ZOOM}
+          className="map-tool-button"
+          aria-label={copy.map.zoomOut}
+          title={copy.map.zoomOut}
+        >
+          -
+        </button>
+        <span className="min-w-12 px-2 text-center font-semibold text-[var(--foreground)]">
+          {zoomPercent}%
+        </span>
+        <button
+          type="button"
+          onClick={() => onZoomChange(clampZoom(zoom + ZOOM_STEP))}
+          disabled={zoom >= MAX_ZOOM}
+          className="map-tool-button"
+          aria-label={copy.map.zoomIn}
+          title={copy.map.zoomIn}
+        >
+          +
+        </button>
+        <button
+          type="button"
+          onClick={() => onZoomChange(DEFAULT_ZOOM)}
+          disabled={zoom === DEFAULT_ZOOM}
+          className="map-tool-button min-w-14 px-2"
+          aria-label={copy.map.resetZoom}
+          title={copy.map.resetZoom}
+        >
+          {copy.map.resetZoom}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -745,4 +835,8 @@ function localeToDateLocaleFromHtml(htmlLang: string) {
   }
 
   return "en-US";
+}
+
+function clampZoom(value: number) {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(value.toFixed(2))));
 }

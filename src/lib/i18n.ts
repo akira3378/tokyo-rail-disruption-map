@@ -44,6 +44,10 @@ export const copies = {
       description: "用于演示的自定义示意坐标，不复刻官方线路图。",
       ariaLabel: "东京铁路异常简化线路图",
       scenario: "演示场景",
+      zoomIn: "放大",
+      zoomOut: "缩小",
+      resetZoom: "重置",
+      zoomLevel: "缩放",
     },
     detail: {
       title: "详情",
@@ -83,6 +87,10 @@ export const copies = {
       description: "デモ用の独自模式座標です。公式路線図は複製していません。",
       ariaLabel: "東京圏鉄道異常の簡略路線図",
       scenario: "デモシナリオ",
+      zoomIn: "拡大",
+      zoomOut: "縮小",
+      resetZoom: "リセット",
+      zoomLevel: "ズーム",
     },
     detail: {
       title: "詳細",
@@ -123,6 +131,10 @@ export const copies = {
         "Custom schematic coordinates for demo use, without copying official rail map artwork.",
       ariaLabel: "Simplified Tokyo rail disruption map",
       scenario: "Demo scenario",
+      zoomIn: "Zoom in",
+      zoomOut: "Zoom out",
+      resetZoom: "Reset",
+      zoomLevel: "Zoom",
     },
     detail: {
       title: "Detail",

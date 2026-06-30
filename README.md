@@ -30,6 +30,7 @@ This project demonstrates:
 - Clickable lines and segments with detail panel
 - Chinese, Japanese, and English interface copy managed through a typed dictionary
 - Light and dark display modes using shared design tokens
+- Map zoom controls with bounded scale and reset
 - Demo scenario switcher:
   - All normal
   - Tokyu Den-en-toshi Line section suspension from Shibuya to Futako-tamagawa
@@ -53,7 +54,8 @@ The application separates the domain model from the UI.
 Core data types live in `src/lib/types.ts`:
 
 - `Station`: station id, display names, and schematic coordinates
-- `RailLine`: operator, color, and ordered station ids
+- `Station.display`: optional metadata for major stations, transfers, and mobile label priority
+- `RailLine`: operator, color, ordered station ids, and optional display importance
 - `Segment`: line section between two adjacent stations
 - `Incident`: abnormal operation information
 - `DemoScenario`: a named set of incidents for portfolio demonstrations

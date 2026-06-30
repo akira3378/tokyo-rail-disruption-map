@@ -23,6 +23,11 @@ export type Station = {
   nameEn: string;
   x: number;
   y: number;
+  display?: {
+    isMajor?: boolean;
+    isTransfer?: boolean;
+    priority?: number;
+  };
 };
 
 export type Segment = {
@@ -38,6 +43,9 @@ export type RailLine = {
   operator: string;
   color: string;
   stationIds: string[];
+  display?: {
+    importance?: number;
+  };
 };
 
 export type Incident = {

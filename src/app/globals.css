@@ -93,6 +93,16 @@ button {
   opacity: 0.38;
 }
 
+.map-pan-viewport {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.map-pan-viewport.is-panning {
+  cursor: grabbing;
+}
+
 .status-badge {
   display: inline-flex;
   flex-shrink: 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { getRailwaySnapshot } from "@/lib/data-access";
 import {
   statusStrokeClasses,
@@ -14,6 +14,7 @@ import {
   type Locale,
   type ThemeMode,
 } from "@/lib/i18n";
+import type { PointerEvent } from "react";
 import type {
   DemoScenario,
   Incident,
@@ -27,7 +28,7 @@ import type {
 
 const MAP_WIDTH = 940;
 const MAP_HEIGHT = 760;
-const MIN_ZOOM = 0.75;
+const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 2.5;
 const ZOOM_STEP = 0.25;
 const DEFAULT_ZOOM = 1;
@@ -55,6 +56,15 @@ export function RailDisruptionMap({
   const [locale, setLocale] = useState<Locale>("zh");
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [isPanning, setIsPanning] = useState(false);
+  const mapViewportRef = useRef<HTMLDivElement>(null);
+  const panStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
 
   const snapshot = useMemo(() => getRailwaySnapshot(scenarioId), [scenarioId]);
   const copy = copies[locale];
@@ -72,6 +82,72 @@ export function RailDisruptionMap({
   const abnormalCount = snapshot.lines.filter(
     (line) => line.status !== "normal",
   ).length;
+
+  const resetMapView = () => {
+    const viewport = mapViewportRef.current;
+
+    if (!viewport) {
+      setZoom(DEFAULT_ZOOM);
+      return;
+    }
+
+    const nextZoom = getFitZoom(viewport);
+    setZoom(nextZoom);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+      });
+    });
+  };
+
+  const startMapPan = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    const viewport = mapViewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    panStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      scrollLeft: viewport.scrollLeft,
+      scrollTop: viewport.scrollTop,
+    };
+    setIsPanning(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const moveMapPan = (event: PointerEvent<HTMLDivElement>) => {
+    const panState = panStateRef.current;
+    const viewport = mapViewportRef.current;
+
+    if (!panState || !viewport || panState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    viewport.scrollLeft = panState.scrollLeft - (event.clientX - panState.startX);
+    viewport.scrollTop = panState.scrollTop - (event.clientY - panState.startY);
+    event.preventDefault();
+  };
+
+  const endMapPan = (event: PointerEvent<HTMLDivElement>) => {
+    if (panStateRef.current?.pointerId !== event.pointerId) {
+      return;
+    }
+
+    panStateRef.current = null;
+    setIsPanning(false);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <div
@@ -137,11 +213,22 @@ export function RailDisruptionMap({
                   copy={copy}
                   zoom={zoom}
                   onZoomChange={setZoom}
+                  onReset={resetMapView}
                 />
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto bg-[var(--map-bg)]">
+            <div
+              ref={mapViewportRef}
+              className={`map-pan-viewport flex-1 overflow-auto bg-[var(--map-bg)] ${
+                isPanning ? "is-panning" : ""
+              }`}
+              onPointerDown={startMapPan}
+              onPointerMove={moveMapPan}
+              onPointerUp={endMapPan}
+              onPointerCancel={endMapPan}
+              onPointerLeave={endMapPan}
+            >
               <div
                 className="relative"
                 style={{
@@ -446,10 +533,12 @@ function ZoomControls({
   copy,
   zoom,
   onZoomChange,
+  onReset,
 }: {
   copy: typeof copies[Locale];
   zoom: number;
   onZoomChange: (zoom: number) => void;
+  onReset: () => void;
 }) {
   const zoomPercent = Math.round(zoom * 100);
 
@@ -487,8 +576,7 @@ function ZoomControls({
         </button>
         <button
           type="button"
-          onClick={() => onZoomChange(DEFAULT_ZOOM)}
-          disabled={zoom === DEFAULT_ZOOM}
+          onClick={onReset}
           className="map-tool-button min-w-14 px-2"
           aria-label={copy.map.resetZoom}
           title={copy.map.resetZoom}
@@ -839,4 +927,11 @@ function localeToDateLocaleFromHtml(htmlLang: string) {
 
 function clampZoom(value: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(value.toFixed(2))));
+}
+
+function getFitZoom(viewport: HTMLDivElement) {
+  const widthRatio = viewport.clientWidth / MAP_WIDTH;
+  const heightRatio = viewport.clientHeight / MAP_HEIGHT;
+
+  return clampZoom(Math.min(DEFAULT_ZOOM, widthRatio, heightRatio));
 }

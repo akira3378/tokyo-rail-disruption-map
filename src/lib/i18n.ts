@@ -46,7 +46,7 @@ export const copies = {
       scenario: "演示场景",
       zoomIn: "放大",
       zoomOut: "缩小",
-      resetZoom: "重置",
+      resetZoom: "适应",
       zoomLevel: "缩放",
     },
     detail: {
@@ -89,7 +89,7 @@ export const copies = {
       scenario: "デモシナリオ",
       zoomIn: "拡大",
       zoomOut: "縮小",
-      resetZoom: "リセット",
+      resetZoom: "全体",
       zoomLevel: "ズーム",
     },
     detail: {
@@ -133,7 +133,7 @@ export const copies = {
       scenario: "Demo scenario",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
-      resetZoom: "Reset",
+      resetZoom: "Fit",
       zoomLevel: "Zoom",
     },
     detail: {

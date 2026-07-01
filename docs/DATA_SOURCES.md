@@ -25,6 +25,29 @@ The useful entity groups for this application are:
 
 The implementation in this repository includes `scripts/import-odpt.mjs`, which can store these datasets as JSON once an ODPT API key is provided.
 
+## ODPT-like Mock Layer
+
+While waiting for an API key, the app uses local fixtures modeled after ODPT train information resources instead of hand-writing UI incidents directly.
+
+The mock records use source-style fields such as:
+
+- `@context`
+- `@type`
+- `owl:sameAs`
+- `dc:date`
+- `dct:valid`
+- `odpt:operator`
+- `odpt:railway`
+- `odpt:railwayTitle`
+- `odpt:trainInformationStatus`
+- `odpt:trainInformationCause`
+- `odpt:trainInformationRange`
+- `odpt:trainInformationText`
+
+These records live in `src/lib/providers/odpt-mock-train-information.ts`.
+
+`src/lib/providers/odpt-normalizer.ts` then maps source records into the app's local `Incident` model. The mapper intentionally keeps ODPT field names out of React components. For segment-level highlighting, the current mock uses a small resolution table keyed by `owl:sameAs`; a real integration can replace that table with station/line matching logic based on imported `odpt:Railway` and `odpt:Station` data.
+
 ## Why Not Scrape Free Public Websites
 
 Some railway information pages are publicly visible without login, but that does not make them safe or appropriate to scrape. For this portfolio project, the rule is:

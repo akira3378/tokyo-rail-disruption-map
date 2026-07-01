@@ -63,7 +63,13 @@ Core data types live in `src/lib/types.ts`:
 
 Static rail network data lives in `src/lib/rail-network.ts`.
 
-Mock scenarios live in `src/lib/demo-scenarios.ts`.
+Mock scenarios are generated from ODPT-like train information fixtures:
+
+- `src/lib/providers/odpt-mock-train-information.ts`: simulated `odpt:TrainInformation` records
+- `src/lib/providers/odpt-normalizer.ts`: maps source records into local `Incident` objects
+- `src/lib/demo-scenarios.ts`: exposes normalized demo scenarios to the provider
+
+This keeps the MVP demonstrable while matching the shape of a future official data integration.
 
 The UI reads data through `src/lib/data-access.ts`, not directly from mock files. This keeps the first MVP simple while leaving a clear replacement point for a future real data provider.
 
@@ -80,6 +86,10 @@ src/
   lib/
     data-access.ts
     demo-scenarios.ts
+    providers/
+      odpt-mock-train-information.ts
+      odpt-normalizer.ts
+      odpt-types.ts
     rail-network.ts
     status.ts
     types.ts
@@ -91,6 +101,10 @@ src/
 Demo scenario selection
         ↓
 getRailwaySnapshot(scenarioId)
+        ↓
+ODPT-like fixture records
+        ↓
+Normalized Incident objects
         ↓
 Resolved line and segment statuses
         ↓

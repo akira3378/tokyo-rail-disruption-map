@@ -22,13 +22,6 @@ export type OdptTrainInformationRecord = {
   "odpt:trainInformationText"?: OdptLocalizedText;
 };
 
-export type OdptMockScenario = {
-  id: string;
-  name: string;
-  description: string;
-  records: OdptTrainInformationRecord[];
-};
-
 export type OdptIncidentResolution = {
   status: Exclude<RailStatus, "normal">;
   scope: IncidentScope;

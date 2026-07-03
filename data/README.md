@@ -2,7 +2,9 @@
 
 This directory is reserved for local JSON datasets.
 
-Current MVP data lives in TypeScript files under `src/lib/` because it is small and hand-curated for the demo.
+The current app can read locally imported ODPT JSON from `data/odpt/raw/`.
+Those raw files are ignored by git and should not be committed unless the
+specific dataset license explicitly allows redistribution.
 
 When importing real open data, use:
 

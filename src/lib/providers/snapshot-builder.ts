@@ -1,4 +1,3 @@
-import { demoScenarios } from "../demo-scenarios";
 import { lines, segments, stations } from "../rail-network";
 import type {
   DemoScenario,
@@ -9,7 +8,6 @@ import type {
   Segment,
   SegmentViewModel,
 } from "../types";
-import type { RailwayProvider } from "./railway-provider";
 
 const statusPriority: Record<RailStatus, number> = {
   normal: 0,
@@ -18,24 +16,6 @@ const statusPriority: Record<RailStatus, number> = {
   delayed: 3,
   suspended: 4,
 };
-
-export const mockRailwayProvider: RailwayProvider = {
-  id: "mock",
-  label: "Mock scenario provider",
-  getScenarioList,
-  getRailwaySnapshot,
-};
-
-function getScenarioList(): DemoScenario[] {
-  return demoScenarios;
-}
-
-function getRailwaySnapshot(scenarioId: string): RailwaySnapshot {
-  const scenario =
-    demoScenarios.find((item) => item.id === scenarioId) ?? demoScenarios[0];
-
-  return buildRailwaySnapshot(scenario);
-}
 
 export function buildRailwaySnapshot(scenario: DemoScenario): RailwaySnapshot {
   const viewLines: LineViewModel[] = lines.map((line) => {

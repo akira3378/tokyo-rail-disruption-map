@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DemoScenario, RailwaySnapshot } from "../types";
-import { buildRailwaySnapshot } from "./mock-railway-provider";
 import { normalizeOdptTrainInformationRecords } from "./odpt-normalizer";
 import type { OdptTrainInformationRecord } from "./odpt-types";
 import type { RailwayProvider } from "./railway-provider";
+import { buildRailwaySnapshot } from "./snapshot-builder";
 
 const trainInformationPath = join(
   process.cwd(),
@@ -14,7 +14,7 @@ const manifestPath = join(process.cwd(), "data/odpt/manifest.json");
 
 export const odptImportProvider: RailwayProvider = {
   id: "odpt-import",
-  label: "ODPT latest local import",
+  label: "ODPT TrainInformation",
   getScenarioList,
   getRailwaySnapshot,
 };
@@ -61,9 +61,9 @@ function readImportedScenario() {
     : "local cache";
 
   cachedScenario = normalizeOdptTrainInformationRecords(records, {
-    id: "odpt-latest-import",
-    name: "ODPT latest import",
-    description: `Locally imported ODPT TrainInformation snapshot (${fetchedLabel}).`,
+    id: "odpt-current-snapshot",
+    name: "ODPT current snapshot",
+    description: `ODPT TrainInformation cache fetched at ${fetchedLabel}.`,
   });
 
   return cachedScenario;

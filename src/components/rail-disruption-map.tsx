@@ -250,16 +250,18 @@ export function RailDisruptionMap({
                 </p>
               </div>
               <div className="grid gap-2 md:justify-items-end">
-                <ScenarioSwitcher
-                  label={copy.map.scenario}
-                  locale={locale}
-                  scenarioId={scenarioId}
-                  scenarios={scenarios}
-                  onChange={(nextScenarioId) => {
-                    setScenarioId(nextScenarioId);
-                    setSelection(null);
-                  }}
-                />
+                {scenarios.length > 1 ? (
+                  <ScenarioSwitcher
+                    label={copy.map.scenario}
+                    locale={locale}
+                    scenarioId={scenarioId}
+                    scenarios={scenarios}
+                    onChange={(nextScenarioId) => {
+                      setScenarioId(nextScenarioId);
+                      setSelection(null);
+                    }}
+                  />
+                ) : null}
                 <ZoomControls
                   copy={copy}
                   zoom={zoom}

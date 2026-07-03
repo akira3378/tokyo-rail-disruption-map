@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Tokyo Rail Disruption Map",
   description:
-    "A portfolio MVP for visualizing simulated rail disruptions in the Tokyo metropolitan area.",
+    "A portfolio MVP for visualizing Tokyo rail disruptions from ODPT TrainInformation.",
 };
 
 export default function RootLayout({

@@ -1,8 +1,8 @@
 # Tokyo Rail Disruption Map
 
-Tokyo Rail Disruption Map is a portfolio MVP for visualizing simulated rail disruption states in the Tokyo metropolitan area. It focuses on frontend interaction, structured domain data, and an architecture that can later be extended to legal real-time transport data sources.
+Tokyo Rail Disruption Map is a portfolio MVP for visualizing rail disruption states in the Tokyo metropolitan area. It focuses on frontend interaction, structured domain data, and a legal ODPT-based ingestion path.
 
-The first version uses mock data only. It does not scrape Yahoo, NAVITIME, railway operator websites, official rail maps, or any other third-party website.
+The current version reads locally imported ODPT TrainInformation data. It does not scrape Yahoo, NAVITIME, railway operator websites, official rail maps, or any other third-party website.
 
 ## Why This Project
 
@@ -10,10 +10,10 @@ Rail disruption information is operationally dense: users need to understand whi
 
 This project demonstrates:
 
-- structured data modeling for lines, stations, segments, incidents, and demo scenarios
+- structured data modeling for lines, stations, segments, incidents, and data snapshots
 - interactive SVG visualization without copying official map designs
 - responsive dashboard UI for desktop and mobile
-- a clean data access layer that can be replaced later by a real API integration
+- a clean data access layer backed by a documented open transport data source
 - a deployment-ready Next.js application for Vercel
 
 ## Features
@@ -31,13 +31,10 @@ This project demonstrates:
 - Chinese, Japanese, and English interface copy managed through a typed dictionary
 - Light and dark display modes using shared design tokens
 - Map zoom controls with bounded scale and reset
-- Demo scenario switcher:
-  - All normal
-  - Tokyu Den-en-toshi Line section suspension from Shibuya to Futako-tamagawa
-  - Tokyo Metro Hanzomon Line delay caused by through-service impact
-  - Multiple simultaneous disruptions
+- ODPT TrainInformation local import and validation scripts
+- Single current-data snapshot on the main page, with an offline empty fallback if no local ODPT cache exists
 - Responsive layout for desktop and mobile screens
-- No database or backend dependency in the first MVP
+- No database dependency in the first ODPT-backed MVP
 
 ## Included Lines
 
@@ -58,20 +55,19 @@ Core data types live in `src/lib/types.ts`:
 - `RailLine`: operator, color, ordered station ids, and optional display importance
 - `Segment`: line section between two adjacent stations
 - `Incident`: abnormal operation information
-- `DemoScenario`: a named set of incidents for portfolio demonstrations
+- `DemoScenario`: currently used as a named data snapshot container
 - `RailwaySnapshot`: resolved view model consumed by the UI
 
 Static rail network data lives in `src/lib/rail-network.ts`.
 
-Mock scenarios are generated from ODPT-like train information fixtures:
+ODPT data is imported with `scripts/import-odpt.mjs`, validated with
+`scripts/validate-odpt-data.mjs`, and normalized through:
 
-- `src/lib/providers/odpt-mock-train-information.ts`: simulated `odpt:TrainInformation` records
 - `src/lib/providers/odpt-normalizer.ts`: maps source records into local `Incident` objects
-- `src/lib/demo-scenarios.ts`: exposes normalized demo scenarios to the provider
+- `src/lib/providers/odpt-import-provider.ts`: reads local ODPT cache and creates the current snapshot
+- `src/lib/providers/snapshot-builder.ts`: resolves incidents into line and segment view models
 
-This keeps the MVP demonstrable while matching the shape of a future official data integration.
-
-The UI reads data through `src/lib/data-access.ts`, not directly from mock files. This keeps the first MVP simple while leaving a clear replacement point for a future real data provider.
+The UI reads data through `src/lib/data-access.ts`, not directly from ODPT raw files. Raw provider data is kept out of React components.
 
 ## Architecture
 
@@ -85,11 +81,11 @@ src/
     rail-disruption-map.tsx
   lib/
     data-access.ts
-    demo-scenarios.ts
     providers/
-      odpt-mock-train-information.ts
+      odpt-import-provider.ts
       odpt-normalizer.ts
       odpt-types.ts
+      snapshot-builder.ts
     rail-network.ts
     status.ts
     types.ts
@@ -98,11 +94,11 @@ src/
 ### Data Flow
 
 ```text
-Demo scenario selection
+ODPT TrainInformation import
         ↓
-getRailwaySnapshot(scenarioId)
+data/odpt/raw/train-information.json
         ↓
-ODPT-like fixture records
+odpt-import-provider
         ↓
 Normalized Incident objects
         ↓
@@ -119,7 +115,7 @@ SVG map, status list, and detail panel
 - Tailwind CSS
 - SVG for the custom schematic map
 
-No map SDK, database, backend service, or crawler is used in the MVP.
+No map SDK, database, or crawler is used in this MVP.
 
 ## Local Development
 
@@ -162,15 +158,15 @@ Recommended flow:
 npm run build
 ```
 
-No environment variables are required for the MVP.
+For ODPT-backed local data, create `.env.local` with `ODPT_API_KEY`.
 
 ## Data Source Policy
 
 Current version:
 
-- uses simulated local mock data only
+- uses locally imported ODPT TrainInformation data
 - does not crawl third-party websites
-- does not republish third-party railway operation data
+- does not commit or republish raw third-party railway operation data
 - does not copy official railway map visual designs
 
 Future real-data versions should use legal and documented data sources, such as:
@@ -212,7 +208,7 @@ Opt-in resources:
 - `odpt:StationTimetable`
 - `odpt:TrainTimetable`
 
-This is intentionally separate from the UI. The next step would be a mapper that converts provider-specific records into this app's `RailwaySnapshot` model.
+The page uses the imported TrainInformation cache through `odpt-import-provider`.
 
 After importing, validate local JSON readiness with:
 
@@ -229,7 +225,6 @@ or scheduled job rather than calling ODPT from every end-user browser session.
 
 ## Future Extensions
 
-- Replace mock scenarios with a real provider implementation behind the same data access interface
 - Import all available Tokyo-area lines and stations from ODPT or licensed GTFS static data
 - Poll licensed operation information every 60 seconds in development or every 1-5 minutes in production, depending on provider terms
 - Add timestamp freshness indicators and stale-data warnings

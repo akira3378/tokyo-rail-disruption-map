@@ -1,9 +1,5 @@
 import type { DemoScenario, Incident, RailStatus } from "../types";
-import type {
-  OdptIncidentResolution,
-  OdptMockScenario,
-  OdptTrainInformationRecord,
-} from "./odpt-types";
+import type { OdptIncidentResolution, OdptTrainInformationRecord } from "./odpt-types";
 
 const railwayIdByOdptRailway: Record<string, string> = {
   "odpt.Railway:Tokyu.Denentoshi": "denentoshi",
@@ -22,20 +18,6 @@ const statusRules: Array<{
   { status: "delayed", patterns: ["遅延", "delay", "delayed"] },
   { status: "unknown", patterns: ["確認中", "unknown", "confirming"] },
 ];
-
-export function normalizeOdptMockScenarios(
-  scenarios: OdptMockScenario[],
-  resolutions: Record<string, OdptIncidentResolution>,
-): DemoScenario[] {
-  return scenarios.map((scenario) => ({
-    id: scenario.id,
-    name: scenario.name,
-    description: scenario.description,
-    incidents: scenario.records
-      .map((record) => normalizeOdptTrainInformation(record, resolutions))
-      .filter((incident): incident is Incident => Boolean(incident)),
-  }));
-}
 
 export function normalizeOdptTrainInformationRecords(
   records: OdptTrainInformationRecord[],
@@ -95,7 +77,7 @@ function normalizeOdptTrainInformation(
     scope,
     affectedArea: rangeText,
     updatedAt: record["dc:date"],
-    note: `ODPT-like mock: ${record["owl:sameAs"]}`,
+    note: `ODPT TrainInformation: ${record["owl:sameAs"]}`,
   };
 }
 

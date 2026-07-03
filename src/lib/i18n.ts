@@ -26,10 +26,10 @@ export const themeLabels: Record<ThemeMode, Record<Locale, string>> = {
 export const copies = {
   zh: {
     htmlLang: "zh-CN",
-    eyebrow: "Portfolio MVP",
+    eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "面向 ODPT 或 GTFS-RT 数据源预留 provider 边界的模拟运行监控面板。MVP 不爬取网页，也不接入第三方实时数据。",
+      "基于 ODPT TrainInformation 的首都圈运行异常可视化。当前版本使用服务端本地缓存，不爬取铁路公司、Yahoo 或 NAVITIME 等网页。",
     controls: {
       language: "语言",
       theme: "显示",
@@ -43,7 +43,7 @@ export const copies = {
       title: "简化线路视图",
       description: "用于演示的自定义示意坐标，不复刻官方线路图。",
       ariaLabel: "东京铁路异常简化线路图",
-      scenario: "演示场景",
+      scenario: "数据快照",
       zoomIn: "放大",
       zoomOut: "缩小",
       resetZoom: "适应",
@@ -60,7 +60,7 @@ export const copies = {
       emptyReason: "当前没有可显示的异常信息。",
       emptyUpdatedAt: "无异常信息",
       dataPolicy:
-        "当前为模拟场景数据。实时 provider 边界已为 ODPT 或 GTFS-RT 预留。",
+        "ODPT TrainInformation 本地缓存；原始数据不提交到仓库，不从前端浏览器直连 ODPT。",
       noLineIncident: "全线暂无异常信息",
     },
     legend: "状态图例",
@@ -69,10 +69,10 @@ export const copies = {
   },
   ja: {
     htmlLang: "ja",
-    eyebrow: "Portfolio MVP",
+    eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "ODPT または GTFS-RT の provider 境界を備えた模擬運行監視ダッシュボードです。MVP ではスクレイピングも外部リアルタイムデータ接続も行いません。",
+      "ODPT TrainInformation に基づく首都圏鉄道の運行異常可視化です。現在はサーバー側のローカルキャッシュを利用し、鉄道会社・Yahoo・NAVITIME 等のサイトはスクレイピングしません。",
     controls: {
       language: "言語",
       theme: "表示",
@@ -86,7 +86,7 @@ export const copies = {
       title: "簡略路線ビュー",
       description: "デモ用の独自模式座標です。公式路線図は複製していません。",
       ariaLabel: "東京圏鉄道異常の簡略路線図",
-      scenario: "デモシナリオ",
+      scenario: "データスナップショット",
       zoomIn: "拡大",
       zoomOut: "縮小",
       resetZoom: "全体",
@@ -103,7 +103,7 @@ export const copies = {
       emptyReason: "現在表示できる異常情報はありません。",
       emptyUpdatedAt: "異常情報なし",
       dataPolicy:
-        "現在は模擬シナリオデータです。ODPT または GTFS-RT 向けの provider 境界を用意しています。",
+        "ODPT TrainInformation のローカルキャッシュです。原データはリポジトリに含めず、ブラウザから ODPT へ直接アクセスしません。",
       noLineIncident: "全線に異常情報なし",
     },
     legend: "ステータス凡例",
@@ -112,10 +112,10 @@ export const copies = {
   },
   en: {
     htmlLang: "en",
-    eyebrow: "Portfolio MVP",
+    eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "A simulated operations dashboard with a provider boundary for ODPT or GTFS-RT data. The MVP does not scrape websites or connect to third-party live data.",
+      "A Tokyo-area disruption view backed by ODPT TrainInformation. This version reads a server-side local cache and does not scrape railway-company, Yahoo, or NAVITIME pages.",
     controls: {
       language: "Language",
       theme: "Theme",
@@ -128,9 +128,9 @@ export const copies = {
     map: {
       title: "Simplified Network View",
       description:
-        "Custom schematic coordinates for demo use, without copying official rail map artwork.",
+        "Custom schematic coordinates, without copying official rail map artwork.",
       ariaLabel: "Simplified Tokyo rail disruption map",
-      scenario: "Demo scenario",
+      scenario: "Data snapshot",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
       resetZoom: "Fit",
@@ -147,7 +147,7 @@ export const copies = {
       emptyReason: "There is no disruption detail to show right now.",
       emptyUpdatedAt: "No disruption information",
       dataPolicy:
-        "Mock scenario data only. A real-time provider boundary is ready for ODPT or GTFS-RT.",
+        "ODPT TrainInformation local cache. Raw provider data is not committed, and browsers do not call ODPT directly.",
       noLineIncident: "No line-wide disruption",
     },
     legend: "Status Legend",
@@ -161,60 +161,33 @@ export const scenarioCopies: Record<
   Record<string, { name: string; description: string }>
 > = {
   zh: {
-    "all-normal": {
-      name: "全部正常",
-      description: "所有对象线路均处于正常运行状态。",
+    "odpt-current-snapshot": {
+      name: "ODPT 当前快照",
+      description: "使用最近一次导入的 ODPT TrainInformation 数据。",
     },
-    "denentoshi-suspended-section": {
-      name: "田园都市线 区间停运",
-      description: "假设渋谷至二子玉川区间发生暂停运行。",
-    },
-    "hanzomon-through-service-delay": {
-      name: "半藏门线 直通影响",
-      description: "假设因直通运行线路影响，半藏门线全线发生延误。",
-    },
-    "multiple-disruptions": {
-      name: "多线路同时异常",
-      description: "用于展示多条线路同时出现不同异常状态的场景。",
+    "odpt-offline-snapshot": {
+      name: "等待 ODPT 数据",
+      description: "本地还没有 ODPT 缓存。请先运行数据导入命令。",
     },
   },
   ja: {
-    "all-normal": {
-      name: "全部正常",
-      description: "すべての対象路線が通常運行している状態です。",
+    "odpt-current-snapshot": {
+      name: "ODPT 現在スナップショット",
+      description: "直近に取り込んだ ODPT TrainInformation データを表示します。",
     },
-    "denentoshi-suspended-section": {
-      name: "田園都市線 区間停運",
-      description: "渋谷〜二子玉川で運転見合わせが発生している想定です。",
-    },
-    "hanzomon-through-service-delay": {
-      name: "半蔵門線 直通影響",
-      description: "直通運転先の影響により半蔵門線全体に遅れがある想定です。",
-    },
-    "multiple-disruptions": {
-      name: "複数路線 同時異常",
-      description: "複数の路線で異なる種類の異常が出ている展示用シナリオです。",
+    "odpt-offline-snapshot": {
+      name: "ODPT データ待ち",
+      description: "ローカル ODPT キャッシュがまだありません。先にデータ取込を実行してください。",
     },
   },
   en: {
-    "all-normal": {
-      name: "All Normal",
-      description: "All selected lines are operating normally.",
+    "odpt-current-snapshot": {
+      name: "ODPT Current Snapshot",
+      description: "Uses the latest locally imported ODPT TrainInformation data.",
     },
-    "denentoshi-suspended-section": {
-      name: "Den-en-toshi Section Suspended",
-      description:
-        "A demo scenario where service is suspended between Shibuya and Futako-tamagawa.",
-    },
-    "hanzomon-through-service-delay": {
-      name: "Hanzomon Through-Service Delay",
-      description:
-        "A demo scenario where Hanzomon Line delays are caused by through-service impact.",
-    },
-    "multiple-disruptions": {
-      name: "Multiple Simultaneous Disruptions",
-      description:
-        "A demo scenario with several lines showing different disruption types at once.",
+    "odpt-offline-snapshot": {
+      name: "Waiting for ODPT Data",
+      description: "No local ODPT cache is available yet. Run the import command first.",
     },
   },
 };

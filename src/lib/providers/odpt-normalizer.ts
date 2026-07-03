@@ -37,6 +37,27 @@ export function normalizeOdptMockScenarios(
   }));
 }
 
+export function normalizeOdptTrainInformationRecords(
+  records: OdptTrainInformationRecord[],
+  options: {
+    id: string;
+    name: string;
+    description: string;
+    resolutions?: Record<string, OdptIncidentResolution>;
+  },
+): DemoScenario {
+  const resolutions = options.resolutions ?? {};
+
+  return {
+    id: options.id,
+    name: options.name,
+    description: options.description,
+    incidents: records
+      .map((record) => normalizeOdptTrainInformation(record, resolutions))
+      .filter((incident): incident is Incident => Boolean(incident)),
+  };
+}
+
 function normalizeOdptTrainInformation(
   record: OdptTrainInformationRecord,
   resolutions: Record<string, OdptIncidentResolution>,

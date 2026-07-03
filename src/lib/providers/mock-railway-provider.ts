@@ -34,6 +34,10 @@ function getRailwaySnapshot(scenarioId: string): RailwaySnapshot {
   const scenario =
     demoScenarios.find((item) => item.id === scenarioId) ?? demoScenarios[0];
 
+  return buildRailwaySnapshot(scenario);
+}
+
+export function buildRailwaySnapshot(scenario: DemoScenario): RailwaySnapshot {
   const viewLines: LineViewModel[] = lines.map((line) => {
     const lineIncident = scenario.incidents.find(
       (incident) =>

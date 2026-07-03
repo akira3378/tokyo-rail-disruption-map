@@ -7,32 +7,45 @@ const apiKey = process.env.ODPT_API_KEY;
 const apiBase = process.env.ODPT_API_BASE ?? "https://api.odpt.org/api/v4";
 const outputDir = process.env.ODPT_OUTPUT_DIR ?? "data/odpt/raw";
 
-const resources = [
+const allResources = [
   {
     name: "operators",
     path: "odpt:Operator",
+    default: true,
   },
   {
     name: "railways",
     path: "odpt:Railway",
+    default: true,
   },
   {
     name: "stations",
     path: "odpt:Station",
+    default: true,
   },
   {
     name: "train-information",
     path: "odpt:TrainInformation",
+    default: true,
   },
   {
     name: "station-timetables",
     path: "odpt:StationTimetable",
+    default: false,
   },
   {
     name: "train-timetables",
     path: "odpt:TrainTimetable",
+    default: false,
   },
 ];
+const requestedResources = parseResourceList(process.env.ODPT_RESOURCES);
+const resources =
+  requestedResources.length > 0
+    ? allResources.filter((resource) =>
+        requestedResources.includes(resource.name),
+      )
+    : allResources.filter((resource) => resource.default);
 
 if (!apiKey) {
   console.error(
@@ -42,6 +55,14 @@ if (!apiKey) {
 }
 
 await mkdir(outputDir, { recursive: true });
+
+const startedAt = new Date().toISOString();
+const manifest = {
+  fetchedAt: startedAt,
+  apiBase,
+  outputDir,
+  resources: [],
+};
 
 for (const resource of resources) {
   const url = new URL(`${apiBase}/${resource.path}`);
@@ -57,12 +78,26 @@ for (const resource of resources) {
 
   const payload = await response.json();
   const filePath = join(outputDir, `${resource.name}.json`);
+  const recordCount = Array.isArray(payload) ? payload.length : 1;
 
   await writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-  console.log(
-    `Wrote ${filePath} (${Array.isArray(payload) ? payload.length : 1} records)`,
-  );
+  manifest.resources.push({
+    name: resource.name,
+    path: resource.path,
+    records: recordCount,
+    file: filePath,
+  });
+  console.log(`Wrote ${filePath} (${recordCount} records)`);
 }
+
+await writeFile(
+  "data/odpt/manifest.json",
+  `${JSON.stringify(manifest, null, 2)}\n`,
+  "utf8",
+);
+console.log(
+  `Wrote data/odpt/manifest.json (${resources.length} resources, fetched ${startedAt})`,
+);
 
 async function loadLocalEnvFiles(paths) {
   for (const path of paths) {
@@ -94,4 +129,27 @@ async function loadLocalEnvFiles(paths) {
       process.env[key] ??= value;
     }
   }
+}
+
+function parseResourceList(value) {
+  if (!value) {
+    return [];
+  }
+
+  const requested = value
+    .split(",")
+    .map((resource) => resource.trim())
+    .filter(Boolean);
+  const knownNames = new Set(allResources.map((resource) => resource.name));
+  const unknown = requested.filter((resource) => !knownNames.has(resource));
+
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown ODPT_RESOURCES values: ${unknown.join(", ")}. Known values: ${[
+        ...knownNames,
+      ].join(", ")}`,
+    );
+  }
+
+  return requested;
 }

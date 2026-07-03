@@ -9,6 +9,7 @@ const requiredFiles = [
   "train-information.json",
 ];
 const optionalFiles = ["station-timetables.json", "train-timetables.json"];
+const manifestFile = "data/odpt/manifest.json";
 
 let hasError = false;
 
@@ -37,6 +38,19 @@ for (const fileName of [...requiredFiles, ...optionalFiles]) {
       console.warn(`optional ${fileName}: not available`);
     }
   }
+}
+
+try {
+  const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+  const resources = Array.isArray(manifest.resources)
+    ? manifest.resources.length
+    : 0;
+
+  console.log(`manifest: ${resources} resources fetched at ${manifest.fetchedAt}`);
+} catch (error) {
+  hasError = true;
+  console.error(`Missing or invalid manifest: ${manifestFile}`);
+  console.error(error instanceof Error ? error.message : String(error));
 }
 
 if (hasError) {

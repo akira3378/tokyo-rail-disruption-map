@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getRailwaySnapshot } from "@/lib/data-access";
 import { copies, statusCopies, type Locale, type ThemeMode } from "@/lib/i18n";
 import {
   DEFAULT_ZOOM,
@@ -33,11 +32,13 @@ import {
 
 type RailDisruptionMapProps = {
   initialSnapshot: RailwaySnapshot;
+  snapshotsByScenario: Record<string, RailwaySnapshot>;
   scenarios: DemoScenario[];
 };
 
 export function RailDisruptionMap({
   initialSnapshot,
+  snapshotsByScenario,
   scenarios,
 }: RailDisruptionMapProps) {
   const [scenarioId, setScenarioId] = useState(initialSnapshot.scenario.id);
@@ -56,7 +57,7 @@ export function RailDisruptionMap({
     scrollTop: number;
   } | null>(null);
 
-  const snapshot = useMemo(() => getRailwaySnapshot(scenarioId), [scenarioId]);
+  const snapshot = snapshotsByScenario[scenarioId] ?? initialSnapshot;
   const copy = copies[locale];
   const statusText = statusCopies[locale];
   const stationById = useMemo(

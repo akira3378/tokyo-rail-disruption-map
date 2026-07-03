@@ -11,3 +11,6 @@ pnpm-debug.log*
 .DS_Store
 *.tsbuildinfo
 .vercel
+tmp
+data/odpt/raw/
+data/odpt/manifest.json

@@ -189,12 +189,26 @@ The repository includes a non-scraping ODPT import script:
 ODPT_API_KEY=your_key npm run import:odpt
 ```
 
-The script fetches documented ODPT resources and stores JSON in `data/odpt/raw/`:
+The script fetches documented ODPT resources and stores JSON in `data/odpt/raw/`.
+Local raw ODPT files are ignored by git so the project does not republish provider
+data by accident.
+
+Default import scope:
 
 - `odpt:Operator`
 - `odpt:Railway`
 - `odpt:Station`
 - `odpt:TrainInformation`
+
+Large timetable resources are opt-in because they are not needed for the
+disruption-map MVP:
+
+```bash
+ODPT_RESOURCES=operators,railways,stations,train-information,station-timetables,train-timetables npm run import:odpt
+```
+
+Opt-in resources:
+
 - `odpt:StationTimetable`
 - `odpt:TrainTimetable`
 
@@ -205,6 +219,13 @@ After importing, validate local JSON readiness with:
 ```bash
 npm run validate:odpt
 ```
+
+ODPT usage note: the official terms reviewed for this project do not describe
+per-request billing for the API itself. They do state that provider/network
+connection costs are borne by the user, that ODPT may define limits on API call
+counts and access timing, and that API calls should be kept to the minimum
+necessary. Production ingestion should therefore poll from a server-side cache
+or scheduled job rather than calling ODPT from every end-user browser session.
 
 ## Future Extensions
 

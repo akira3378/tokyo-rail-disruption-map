@@ -1,31 +1,32 @@
 import {
   copies,
   localeLabels,
-  snapshotCopies,
   statusCopies,
   themeLabels,
   type Locale,
   type ThemeMode,
 } from "@/lib/i18n";
-import { formatDateTime } from "@/lib/map/format";
+import { formatDateTime, formatTime } from "@/lib/map/format";
 import type { DetailModel } from "@/lib/map/detail-model";
-import type { OperationSnapshot, LineViewModel, RailStatus } from "@/lib/types";
+import type { LineViewModel, RailStatus } from "@/lib/types";
+
+const statusOrder: Record<RailStatus, number> = {
+  suspended: 0,
+  delayed: 1,
+  reduced: 2,
+  unknown: 3,
+  normal: 4,
+};
 
 export function DetailPanel({
   detail,
-  operation,
   copy,
-  locale,
   statusText,
 }: {
-  detail?: DetailModel;
-  operation: OperationSnapshot;
+  detail: DetailModel;
   copy: (typeof copies)[Locale];
-  locale: Locale;
   statusText: Record<RailStatus, { label: string; description: string }>;
 }) {
-  const operationText = getOperationText(operation, locale);
-
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -34,38 +35,33 @@ export function DetailPanel({
             {copy.detail.title}
           </p>
           <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
-            {detail?.title ?? copy.detail.emptyTitle}
+            {detail.title}
           </h2>
         </div>
-        {detail ? (
-          <StatusBadge
-            status={detail.status}
-            label={statusText[detail.status].label}
-          />
-        ) : null}
+        <StatusBadge
+          status={detail.status}
+          label={statusText[detail.status].label}
+        />
       </div>
 
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-        {detail?.subtitle ?? operationText.description}
+        {detail.subtitle}
       </p>
 
       <div className="mt-4 grid gap-3 text-sm">
         <DetailRow
           label={copy.detail.affectedArea}
-          value={detail?.affectedArea ?? copy.detail.emptyAffectedArea}
+          value={detail.affectedArea}
         />
         <DetailRow
           label={copy.detail.reason}
-          value={detail?.incident?.reason ?? copy.detail.emptyReason}
+          value={detail.incident?.reason ?? copy.detail.emptyReason}
         />
         <DetailRow
           label={copy.detail.updatedAt}
-          value={formatDateTime(detail?.incident?.updatedAt, copy)}
+          value={formatDateTime(detail.incident?.updatedAt, copy)}
         />
-        <DetailRow
-          label={copy.detail.data}
-          value={formatIncidentSource(detail?.incident) ?? copy.detail.dataPolicy}
-        />
+        <DetailRow label={copy.detail.data} value={formatIncidentSource(detail, copy)} />
       </div>
     </section>
   );
@@ -74,11 +70,15 @@ export function DetailPanel({
 export function LineStatusList({
   title,
   lines,
+  copy,
+  locale,
   statusText,
   onSelectLine,
 }: {
   title: string;
   lines: LineViewModel[];
+  copy: (typeof copies)[Locale];
+  locale: Locale;
   statusText: Record<RailStatus, { label: string; description: string }>;
   onSelectLine: (lineId: string) => void;
 }) {
@@ -86,15 +86,28 @@ export function LineStatusList({
     .filter((line) => line.status !== "normal")
     .sort(
       (a, b) =>
+        statusOrder[a.status] - statusOrder[b.status] ||
         a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name),
     );
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+            {title}
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+            {copy.sidePanel.sourceNote}
+          </p>
+        </div>
+        <span className="rounded-full border border-[var(--border)] bg-[var(--panel-strong)] px-2.5 py-1 text-xs font-semibold text-[var(--muted)]">
+          {formatCount(copy.sidePanel.countLabel, abnormalLines.length)}
+        </span>
+      </div>
       {abnormalLines.length === 0 ? (
         <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-sm font-medium text-[var(--muted)]">
-          当前没有异常线路
+          {copy.sidePanel.noAbnormal}
         </p>
       ) : (
         <div className="mt-3 grid max-h-[520px] gap-2 overflow-auto pr-1">
@@ -103,26 +116,39 @@ export function LineStatusList({
               key={line.id}
               type="button"
               onClick={() => onSelectLine(line.id)}
-              className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
+              className="grid gap-2 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2.5 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
             >
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
-                  {line.name}
+              <span className="flex min-w-0 items-start justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
+                    {line.name}
+                  </span>
+                  <span className="block truncate text-xs text-[var(--muted)]">
+                    {line.operator}
+                  </span>
                 </span>
-                <span className="block text-xs text-[var(--muted)]">
-                  {line.operator}
+                <span className="flex shrink-0 items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: line.color }}
+                    aria-hidden="true"
+                  />
+                  <StatusBadge
+                    status={line.status}
+                    label={statusText[line.status].label}
+                  />
                 </span>
               </span>
-              <span className="flex items-center gap-2">
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: line.color }}
-                  aria-hidden="true"
-                />
-                <StatusBadge
-                  status={line.status}
-                  label={statusText[line.status].label}
-                />
+              <span className="grid gap-1">
+                <span className="line-clamp-2 text-xs leading-5 text-[var(--foreground)]">
+                  {line.incident?.reason ?? statusText[line.status].description}
+                </span>
+                <span className="flex items-center justify-between gap-3 text-xs text-[var(--muted)]">
+                  <span>
+                    {formatTime(line.incident?.updatedAt, locale, copy.noTime)}
+                  </span>
+                  <span>{copy.sidePanel.openDetail}</span>
+                </span>
               </span>
             </button>
           ))}
@@ -219,22 +245,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function formatIncidentSource(incident?: DetailModel["incident"]) {
+function formatIncidentSource(
+  detail: DetailModel,
+  copy: (typeof copies)[Locale],
+) {
+  const incident = detail.incident;
+
   if (!incident?.source) {
-    return undefined;
+    return copy.detail.dataPolicy;
   }
 
   const { raw } = incident.source;
+  const sourceName =
+    incident.source.provider === "yahoo"
+      ? copy.sidePanel.supplementalSourceName
+      : copy.sidePanel.sourceName;
+  const validUntil = "dct:valid" in raw && raw["dct:valid"]
+    ? `${copy.sidePanel.validUntil} ${formatDateTime(raw["dct:valid"], copy)}`
+    : null;
 
-  return [
-    incident.source.resourceType,
-    raw["owl:sameAs"],
-    raw["dct:valid"] ? `dct:valid: ${raw["dct:valid"]}` : null,
-  ]
+  return [sourceName, validUntil]
     .filter(Boolean)
     .join(" / ");
 }
 
-function getOperationText(operation: OperationSnapshot, locale: Locale) {
-  return snapshotCopies[locale][operation.id] ?? operation;
+function formatCount(template: string, count: number) {
+  return template.replace("{count}", String(count));
 }

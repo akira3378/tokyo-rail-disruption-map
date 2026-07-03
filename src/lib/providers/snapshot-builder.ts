@@ -76,12 +76,41 @@ export function buildRailwaySnapshot(
       segments: lineSegments,
     };
   });
+  const knownLineIds = new Set(network.lines.map((line) => line.id));
+  const externalLines = operation.incidents
+    .filter(
+      (incident) =>
+        incident.scope.type === "line" && !knownLineIds.has(incident.scope.lineId),
+    )
+    .map((incident): LineViewModel => {
+      const line: RailLine = {
+        id: incident.scope.lineId,
+        name: incident.lineName ?? incident.affectedArea,
+        operator: incident.operatorName ?? "External source",
+        color: "#6b7280",
+        stationIds: [],
+        source: incident.source
+          ? {
+              provider: incident.source.provider,
+              resourceType: incident.source.resourceType,
+              raw: incident.source.raw,
+            }
+          : undefined,
+      };
+
+      return {
+        ...line,
+        status: incident.status,
+        incident,
+        segments: [],
+      };
+    });
 
   return {
     operation,
     generatedAt: new Date().toISOString(),
     stations: network.stations,
-    lines: viewLines,
+    lines: [...viewLines, ...externalLines],
   };
 }
 

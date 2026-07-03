@@ -92,9 +92,6 @@ export function RailDisruptionMap({
             <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[var(--foreground)] md:text-4xl">
               {copy.title}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
-              {copy.subtitle}
-            </p>
           </div>
           <div className="grid gap-3 md:justify-items-end">
             <Toolbar
@@ -145,19 +142,21 @@ export function RailDisruptionMap({
           </div>
 
           <aside className="flex flex-col gap-4">
-            <DetailPanel
-              detail={selectedDetail}
-              operation={snapshot.operation}
-              copy={copy}
-              locale={locale}
-              statusText={statusText}
-            />
             <LineStatusList
               title={copy.abnormalLines}
               lines={snapshot.lines}
+              copy={copy}
+              locale={locale}
               statusText={statusText}
               onSelectLine={selectLine}
             />
+            {selectedDetail ? (
+              <DetailPanel
+                detail={selectedDetail}
+                copy={copy}
+                statusText={statusText}
+              />
+            ) : null}
           </aside>
         </section>
       </div>

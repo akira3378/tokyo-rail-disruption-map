@@ -6,9 +6,12 @@ import {
 } from "../sources/odpt/client";
 import { mapOdptRailwaysToNetwork } from "../sources/odpt/railway-network-mapper";
 import { mapOdptTrainInformationToOperationSnapshot } from "../sources/odpt/train-information-mapper";
+import { fetchYahooTrainInformation } from "../sources/yahoo/train-information";
 import { buildRailwaySnapshot } from "./snapshot-builder";
 
 export { ODPT_REVALIDATE_SECONDS };
+
+const ENABLE_YAHOO_SUPPLEMENTAL_SOURCE = false;
 
 export async function getOdptLiveRailwaySnapshot(): Promise<RailwaySnapshot> {
   const [railways, records] = await Promise.all([
@@ -27,6 +30,16 @@ export async function getOdptLiveRailwaySnapshot(): Promise<RailwaySnapshot> {
     name: "ODPT live snapshot",
     description: `ODPT TrainInformation fetched through the server API at ${fetchedLabel}.`,
   });
+  const yahooIncidents = ENABLE_YAHOO_SUPPLEMENTAL_SOURCE
+    ? await fetchYahooTrainInformation().catch((error) => {
+        console.warn(error);
+        return [];
+      })
+    : [];
+  const mergedOperation = {
+    ...operation,
+    incidents: [...operation.incidents, ...yahooIncidents],
+  };
 
-  return buildRailwaySnapshot(operation, mapOdptRailwaysToNetwork(railways));
+  return buildRailwaySnapshot(mergedOperation, mapOdptRailwaysToNetwork(railways));
 }

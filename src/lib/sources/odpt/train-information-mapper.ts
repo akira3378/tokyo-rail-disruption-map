@@ -115,6 +115,7 @@ function isNormalOperationText(fields: string) {
     "平常運行",
     "通常通り",
     "遅延はありません",
+    "遅れはありません",
     "delay-free",
     "normal",
   ].some((pattern) => fields.includes(pattern.toLowerCase()));

@@ -71,8 +71,33 @@ export const odptTrainInformationStatusRules: Array<{
   status: Exclude<RailStatus, "normal">;
   patterns: string[];
 }> = [
-  { status: "suspended", patterns: ["運転見合わせ", "運休", "suspended"] },
-  { status: "reduced", patterns: ["運転本数", "減少", "reduced"] },
-  { status: "delayed", patterns: ["遅延", "delay", "delayed"] },
+  {
+    status: "suspended",
+    patterns: ["運転見合わせ", "運休", "運転を見合わせ", "suspended"],
+  },
+  {
+    status: "reduced",
+    patterns: ["運転本数", "減少", "間引き", "reduced"],
+  },
+  {
+    status: "delayed",
+    patterns: [
+      "遅延",
+      "遅れ",
+      "ダイヤが乱れ",
+      "ダイヤ乱れ",
+      "一部列車",
+      "安全確認",
+      "点検",
+      "救護活動",
+      "急病人",
+      "混雑",
+      "車両故障",
+      "踏切",
+      "影響",
+      "delay",
+      "delayed",
+    ],
+  },
   { status: "unknown", patterns: ["確認中", "unknown", "confirming"] },
 ];

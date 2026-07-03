@@ -68,48 +68,6 @@ button {
   font: inherit;
 }
 
-.map-tool-button {
-  display: inline-flex;
-  min-width: 2rem;
-  height: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.25rem;
-  color: var(--muted);
-  font-weight: 800;
-  transition:
-    background 160ms ease,
-    color 160ms ease,
-    opacity 160ms ease;
-}
-
-.map-tool-button:hover:not(:disabled) {
-  background: var(--panel-strong);
-  color: var(--foreground);
-}
-
-.map-tool-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.38;
-}
-
-.map-pan-viewport {
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-}
-
-.map-pan-viewport.is-panning {
-  cursor: grabbing;
-}
-
-.status-overview-reason {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
 .status-badge {
   display: inline-flex;
   flex-shrink: 0;
@@ -150,41 +108,4 @@ button {
   border-color: color-mix(in srgb, var(--unknown), transparent 35%);
   background: color-mix(in srgb, var(--unknown), transparent 80%);
   color: var(--foreground);
-}
-
-@keyframes rail-alert-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.36;
-  }
-}
-
-@keyframes rail-alert-halo {
-  0%,
-  100% {
-    opacity: 0.24;
-  }
-
-  50% {
-    opacity: 0.62;
-  }
-}
-
-.rail-alert-blink {
-  animation: rail-alert-blink 1.15s ease-in-out infinite;
-}
-
-.rail-alert-halo {
-  animation: rail-alert-halo 1.15s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rail-alert-blink,
-  .rail-alert-halo {
-    animation: none;
-  }
 }

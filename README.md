@@ -255,6 +255,13 @@ or scheduled job rather than calling ODPT from every end-user browser session.
 - Add tests for incident-to-segment resolution logic
 - Add observability for real production data ingestion if a backend is introduced
 
+## Development Handoff
+
+For continuing this project in a fresh Codex conversation, read
+`docs/HANDOFF.md` first. It summarizes the current implementation, data-source
+decisions, failed visualization attempts, lessons learned, verification
+commands, and recommended next steps.
+
 ## MVP Boundary
 
 The first release intentionally avoids backend infrastructure and persistent storage. A database such as Supabase would become useful only after adding user-specific saved views, historical incident archives, authentication, or server-side ingestion jobs.

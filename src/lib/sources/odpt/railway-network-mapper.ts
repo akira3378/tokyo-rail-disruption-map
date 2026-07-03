@@ -1,16 +1,19 @@
 import type { RailLine, Segment, Station } from "@/lib/types";
-import { getLineIdFromOdptRailway } from "./railway-mapping";
+import {
+  getLineIdFromOdptRailway,
+  railwayColorOverrides,
+} from "./railway-mapping";
 import type { OdptRailwayRecord } from "./types";
 
 const fallbackPalette = [
-  "#1f77b4",
-  "#2ca02c",
-  "#d62728",
-  "#9467bd",
-  "#8c564b",
-  "#e377c2",
-  "#17becf",
-  "#bcbd22",
+  "#006BA6",
+  "#2A9D8F",
+  "#E76F51",
+  "#6A4C93",
+  "#B56576",
+  "#3A86FF",
+  "#7CB518",
+  "#D95D39",
 ];
 
 export type OdptRailwayNetwork = {
@@ -22,13 +25,14 @@ export type OdptRailwayNetwork = {
 export function mapOdptRailwaysToNetwork(
   railways: OdptRailwayRecord[],
 ): OdptRailwayNetwork {
-  const lines = railways
-    .map((railway, index) => mapOdptRailwayToLine(railway, index))
-    .sort((a, b) => a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name));
-
   return {
     stations: [],
-    lines,
+    lines: railways
+      .map((railway, index) => mapOdptRailwayToLine(railway, index))
+      .sort(
+        (a, b) =>
+          a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name),
+      ),
     segments: [],
   };
 }
@@ -44,7 +48,7 @@ function mapOdptRailwayToLine(
     name: railway["odpt:railwayTitle"]?.ja ?? railway["dc:title"] ?? sameAs,
     nameEn: railway["odpt:railwayTitle"]?.en,
     operator: formatOperatorName(railway["odpt:operator"]),
-    color: normalizeRailwayColor(railway["odpt:color"], index),
+    color: normalizeRailwayColor(railway, index),
     stationIds: [],
     source: {
       provider: "odpt",
@@ -58,9 +62,17 @@ function formatOperatorName(operator: string) {
   return operator.replace(/^odpt\.Operator:/, "");
 }
 
-function normalizeRailwayColor(color: string | undefined, index: number) {
+function normalizeRailwayColor(railway: OdptRailwayRecord, index: number) {
+  const color = railway["odpt:color"];
+
   if (color?.startsWith("#")) {
     return color;
+  }
+
+  const override = railwayColorOverrides[railway["owl:sameAs"]];
+
+  if (override) {
+    return override;
   }
 
   return fallbackPalette[index % fallbackPalette.length];

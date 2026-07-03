@@ -7,70 +7,9 @@ import {
   type Locale,
   type ThemeMode,
 } from "@/lib/i18n";
-import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "@/lib/map/constants";
-import { clampZoom } from "@/lib/map/bounds";
 import { formatDateTime } from "@/lib/map/format";
 import type { DetailModel } from "@/lib/map/detail-model";
 import type { OperationSnapshot, LineViewModel, RailStatus } from "@/lib/types";
-
-export function ZoomControls({
-  copy,
-  zoom,
-  onZoomChange,
-  onReset,
-}: {
-  copy: (typeof copies)[Locale];
-  zoom: number;
-  onZoomChange: (zoom: number) => void;
-  onReset: () => void;
-}) {
-  const zoomPercent = Math.round(zoom * 100);
-
-  return (
-    <div
-      className="flex w-full items-center justify-between gap-2 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1 text-xs md:w-72"
-      aria-label={copy.map.zoomLevel}
-    >
-      <span className="px-2 font-semibold text-[var(--muted)]">
-        {copy.map.zoomLevel}
-      </span>
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => onZoomChange(clampZoom(zoom - ZOOM_STEP))}
-          disabled={zoom <= MIN_ZOOM}
-          className="map-tool-button"
-          aria-label={copy.map.zoomOut}
-          title={copy.map.zoomOut}
-        >
-          -
-        </button>
-        <span className="min-w-12 px-2 text-center font-semibold text-[var(--foreground)]">
-          {zoomPercent}%
-        </span>
-        <button
-          type="button"
-          onClick={() => onZoomChange(clampZoom(zoom + ZOOM_STEP))}
-          disabled={zoom >= MAX_ZOOM}
-          className="map-tool-button"
-          aria-label={copy.map.zoomIn}
-          title={copy.map.zoomIn}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="map-tool-button min-w-14 px-2"
-          aria-label={copy.map.resetZoom}
-          title={copy.map.resetZoom}
-        >
-          {copy.map.resetZoom}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export function DetailPanel({
   detail,
@@ -132,46 +71,6 @@ export function DetailPanel({
   );
 }
 
-export function Legend({
-  title,
-  statusText,
-}: {
-  title: string;
-  statusText: Record<RailStatus, { label: string; description: string }>;
-}) {
-  const statuses: RailStatus[] = [
-    "normal",
-    "delayed",
-    "suspended",
-    "reduced",
-    "unknown",
-  ];
-
-  return (
-    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-        {statuses.map((status) => (
-          <div key={status} className="flex items-center gap-2">
-            <span
-              className={`h-1.5 w-9 rounded-full ${
-                status === "normal" ? "bg-slate-400" : ""
-              } ${status === "delayed" ? "bg-amber-500" : ""} ${
-                status === "suspended" ? "bg-red-500" : ""
-              } ${status === "reduced" ? "bg-violet-500" : ""} ${
-                status === "unknown" ? "bg-slate-700" : ""
-              }`}
-            />
-            <span className="text-[var(--muted)]">
-              {statusText[status].label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export function LineStatusList({
   title,
   lines,
@@ -183,48 +82,52 @@ export function LineStatusList({
   statusText: Record<RailStatus, { label: string; description: string }>;
   onSelectLine: (lineId: string) => void;
 }) {
-  const sortedLines = [...lines].sort((a, b) => {
-    const aAbnormal = a.status === "normal" ? 1 : 0;
-    const bAbnormal = b.status === "normal" ? 1 : 0;
-
-    return aAbnormal - bAbnormal || a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name);
-  });
+  const abnormalLines = lines
+    .filter((line) => line.status !== "normal")
+    .sort(
+      (a, b) =>
+        a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name),
+    );
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
-      <div className="mt-3 grid max-h-[520px] gap-2 overflow-auto pr-1">
-        {sortedLines.map((line) => (
-          <button
-            key={line.id}
-            type="button"
-            onClick={() => onSelectLine(line.id)}
-            className={`flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)] ${
-              line.status === "normal" ? "" : "rail-alert-blink"
-            }`}
-          >
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
-                {line.name}
+      {abnormalLines.length === 0 ? (
+        <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-sm font-medium text-[var(--muted)]">
+          当前没有异常线路
+        </p>
+      ) : (
+        <div className="mt-3 grid max-h-[520px] gap-2 overflow-auto pr-1">
+          {abnormalLines.map((line) => (
+            <button
+              key={line.id}
+              type="button"
+              onClick={() => onSelectLine(line.id)}
+              className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
+                  {line.name}
+                </span>
+                <span className="block text-xs text-[var(--muted)]">
+                  {line.operator}
+                </span>
               </span>
-              <span className="block text-xs text-[var(--muted)]">
-                {line.operator}
+              <span className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: line.color }}
+                  aria-hidden="true"
+                />
+                <StatusBadge
+                  status={line.status}
+                  label={statusText[line.status].label}
+                />
               </span>
-            </span>
-            <span className="flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: line.color }}
-                aria-hidden="true"
-              />
-              <StatusBadge
-                status={line.status}
-                label={statusText[line.status].label}
-              />
-            </span>
-          </button>
-        ))}
-      </div>
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

@@ -42,7 +42,7 @@ export const copies = {
     map: {
       title: "运行状态总览",
       description:
-        "线路来自 ODPT Railway；当前运行异常由 ODPT TrainInformation 叠加显示。",
+        "线路来自 ODPT Railway；当前运行异常由 ODPT TrainInformation 提供。",
       ariaLabel: "东京铁路运行状态总览",
       scenario: "数据快照",
       zoomIn: "放大",
@@ -58,7 +58,7 @@ export const copies = {
       updatedAt: "更新时间",
       data: "数据",
       emptyAffectedArea: "ODPT Railway 中的线路会默认显示为正常。",
-      emptyReason: "异常线路会优先排列并闪烁显示；点击线路可查看来源详情。",
+      emptyReason: "异常线路会在右侧列表展示；点击线路可查看来源详情。",
       emptyUpdatedAt: "以最新 ODPT 快照为准",
       dataPolicy:
         "ODPT TrainInformation 服务端 API；前端不直接持有或调用 ODPT key。",
@@ -66,6 +66,7 @@ export const copies = {
     },
     legend: "状态图例",
     lines: "线路",
+    abnormalLines: "异常线路",
     noTime: "--:--",
   },
   ja: {
@@ -86,7 +87,7 @@ export const copies = {
     map: {
       title: "運行ステータス一覧",
       description:
-        "路線は ODPT Railway、異常情報は ODPT TrainInformation から重ねて表示します。",
+        "路線は ODPT Railway、異常情報は ODPT TrainInformation から取得します。",
       ariaLabel: "東京圏鉄道運行ステータス一覧",
       scenario: "データスナップショット",
       zoomIn: "拡大",
@@ -102,7 +103,7 @@ export const copies = {
       updatedAt: "更新時刻",
       data: "データ",
       emptyAffectedArea: "ODPT Railway の路線は通常運行として初期表示します。",
-      emptyReason: "異常路線は優先表示し、点滅で強調します。路線を選ぶと出典詳細を表示します。",
+      emptyReason: "異常路線は右側の一覧に表示します。路線を選ぶと出典詳細を表示します。",
       emptyUpdatedAt: "最新の ODPT スナップショットに基づきます",
       dataPolicy:
         "ODPT TrainInformation のサーバー API です。ブラウザは ODPT key を保持せず、直接 ODPT にアクセスしません。",
@@ -110,6 +111,7 @@ export const copies = {
     },
     legend: "ステータス凡例",
     lines: "路線",
+    abnormalLines: "異常路線",
     noTime: "--:--",
   },
   en: {
@@ -130,7 +132,7 @@ export const copies = {
     map: {
       title: "Operation Status Overview",
       description:
-        "Lines come from ODPT Railway, with current disruptions overlaid from ODPT TrainInformation.",
+        "Lines come from ODPT Railway, with current disruptions from ODPT TrainInformation.",
       ariaLabel: "Tokyo rail operation status overview",
       scenario: "Data snapshot",
       zoomIn: "Zoom in",
@@ -146,7 +148,7 @@ export const copies = {
       updatedAt: "Updated at",
       data: "Data",
       emptyAffectedArea: "ODPT Railway lines are shown as normal by default.",
-      emptyReason: "Disrupted lines are prioritized and blink. Select a line to inspect source details.",
+      emptyReason: "Disrupted lines appear in the side list. Select a line to inspect source details.",
       emptyUpdatedAt: "Based on the latest ODPT snapshot",
       dataPolicy:
         "ODPT TrainInformation server API. The browser never stores the ODPT key or calls ODPT directly.",
@@ -154,6 +156,7 @@ export const copies = {
     },
     legend: "Status Legend",
     lines: "Lines",
+    abnormalLines: "Abnormal Lines",
     noTime: "--:--",
   },
 } as const;

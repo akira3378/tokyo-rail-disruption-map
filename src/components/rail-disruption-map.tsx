@@ -7,12 +7,10 @@ import { formatTime } from "@/lib/map/format";
 import type { RailwaySnapshot, Selection } from "@/lib/types";
 import {
   DetailPanel,
-  Legend,
   LineStatusList,
   Metric,
   Toolbar,
 } from "./rail-map/panels";
-import { RailStatusOverview } from "./rail-map/status-overview";
 
 const REFRESH_INTERVAL_MS = 60_000;
 
@@ -141,13 +139,8 @@ export function RailDisruptionMap({
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto bg-[var(--map-bg)]">
-              <RailStatusOverview
-                lines={snapshot.lines}
-                selection={selection}
-                statusText={statusText}
-                onSelectLine={selectLine}
-              />
+            <div className="flex-1 bg-[var(--map-bg)]">
+              <div className="min-h-[620px]" aria-label={copy.map.ariaLabel} />
             </div>
           </div>
 
@@ -159,9 +152,8 @@ export function RailDisruptionMap({
               locale={locale}
               statusText={statusText}
             />
-            <Legend title={copy.legend} statusText={statusText} />
             <LineStatusList
-              title={copy.lines}
+              title={copy.abnormalLines}
               lines={snapshot.lines}
               statusText={statusText}
               onSelectLine={selectLine}

@@ -4,7 +4,7 @@ import {
   ODPT_REVALIDATE_SECONDS,
 } from "@/lib/providers/odpt-live-provider";
 
-export const revalidate = ODPT_REVALIDATE_SECONDS;
+export const revalidate = 60;
 
 export async function GET() {
   try {

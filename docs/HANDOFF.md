@@ -5,9 +5,10 @@ Last updated: 2026-07-03 JST
 ## Current State
 
 - Branch: `main`
-- Latest pushed commit: `aec67ee Show ODPT railway-wide status overview`
+- Latest pushed commit: `d1e55a3 Refine rail disruption side panel`
 - Do not push until the user explicitly approves.
-- The MapLibre and SVG map attempts have been removed from the active UI.
+- The old local raw ODPT import workflow and hand-written fallback rail network
+  have been removed from the active codebase.
 
 ## Product Direction
 
@@ -16,8 +17,10 @@ This app is a Tokyo-area rail disruption dashboard backed by ODPT data.
 - Browser calls this app's server API, not ODPT directly.
 - Railway master data comes from `odpt:Railway`.
 - Current operation notices come from `odpt:TrainInformation`.
-- The overview content area is intentionally empty for a future standalone
-  visualization component.
+- The overview content area uses free OpenStreetMap base tiles plus an
+  OpenRailwayMap railway overlay.
+- When an abnormal line is selected, the app extracts station names from the
+  detail text and marks known stations on the map.
 - The side panel lists abnormal ODPT lines only.
 - The app does not scrape Yahoo, NAVITIME, railway-company websites, or
   unofficial private endpoints.
@@ -35,7 +38,10 @@ This app is a Tokyo-area rail disruption dashboard backed by ODPT data.
   - `src/lib/sources/odpt/railway-mapping.ts`
 - UI files:
   - `src/components/rail-disruption-map.tsx`
+  - `src/components/rail-map/railway-tile-overview.tsx`
   - `src/components/rail-map/panels.tsx`
+- Station marker helper:
+  - `src/lib/map/station-locator.ts`
 - I18n:
   - `src/lib/i18n.ts`
 
@@ -43,10 +49,11 @@ This app is a Tokyo-area rail disruption dashboard backed by ODPT data.
 
 - Header metrics show total ODPT Railway lines, abnormal line count, and latest
   update time.
-- Main "operation status overview" card reserves an empty content area.
-- Detail panel shows all-line status until an abnormal line is selected.
+- Main "operation status overview" card renders OSM/OpenRailwayMap raster tiles
+  without an API key.
+- Detail panel is shown after an abnormal line is selected.
 - Abnormal line panel lists every line whose mapped status is not `normal`.
-- No blinking, zoom controls, drag controls, SVG map, or MapLibre map are active.
+- No custom SVG schematic or MapLibre map is active.
 
 ## Data Notes
 
@@ -82,7 +89,7 @@ Why it failed:
 
 Lesson:
 
-- Do not attempt a full Tokyo rail schematic from raw ODPT Railway and Station
+- Do not attempt a full Tokyo rail schematic from ODPT Railway and Station
   fields alone. A readable schematic needs curated topology, licensed GTFS shape
   data, or a deliberately designed manual/semiautomatic layout layer.
 
@@ -107,8 +114,9 @@ Why it failed:
 Lesson:
 
 - MapLibre is not automatically simpler unless the product is truly a geographic
-  map. For this dashboard, the next overview component should start from the
-  user task: current disruption understanding, not map-library adoption.
+  map with reliable route geometry. The current approach uses a third-party
+  railway tile layer for spatial context and overlays only station markers that
+  can be matched from incident text.
 
 ### Yahoo Parity Assumption
 
@@ -137,6 +145,9 @@ Useful local API check:
 curl -sS http://localhost:3000/api/railway-snapshot
 ```
 
+The map overview uses public OSM/OpenRailwayMap tiles. Keep traffic small, keep
+attribution visible, and do not bulk-download or prefetch tiles.
+
 If build fails inside Codex sandbox with a Turbopack/PostCSS port permission
 error, rerun `npm run build` outside the sandbox with approval. That specific
 error is a sandbox limitation, not necessarily an application build failure.
@@ -145,7 +156,7 @@ error is a sandbox limitation, not necessarily an application build failure.
 
 ```text
 请先阅读 /Users/akira/Documents/Tokyo Railway Map/docs/HANDOFF.md 和当前 git 状态。
-我们要继续 Tokyo Rail Disruption Map。当前总览内容区是空的，准备重新设计一个独立组件引入。
-右侧异常线路只使用 ODPT TrainInformation；先不要接 Yahoo 或网页爬取。
+我们要继续 Tokyo Rail Disruption Map。当前总览使用 OSM/OpenRailwayMap 免费铁路瓦片，侧边选择异常线路后根据详情里的站名匹配地图 marker。
+右侧异常线路默认只使用 ODPT TrainInformation；先不要接 Yahoo 或网页爬取。
 先不要 push，完成本地验证后再问我。
 ```

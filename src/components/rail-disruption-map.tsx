@@ -11,6 +11,7 @@ import {
   Metric,
   Toolbar,
 } from "./rail-map/panels";
+import { RailwayTileOverview } from "./rail-map/railway-tile-overview";
 
 const REFRESH_INTERVAL_MS = 60_000;
 
@@ -23,7 +24,7 @@ export function RailDisruptionMap({
 }: RailDisruptionMapProps) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [locale, setLocale] = useState<Locale>("zh");
+  const [locale, setLocale] = useState<Locale>("ja");
   const [theme, setTheme] = useState<ThemeMode>("light");
 
   const copy = copies[locale];
@@ -123,8 +124,8 @@ export function RailDisruptionMap({
           </div>
         </header>
 
-        <section className="grid flex-1 gap-4 py-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex min-h-[620px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm">
+        <section className="grid items-start gap-4 py-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm">
             <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--panel-strong)] p-3 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
                 <h2 className="text-base font-semibold text-[var(--foreground)]">
@@ -136,8 +137,11 @@ export function RailDisruptionMap({
               </div>
             </div>
 
-            <div className="flex-1 bg-[var(--map-bg)]">
-              <div className="min-h-[620px]" aria-label={copy.map.ariaLabel} />
+            <div className="bg-[var(--map-bg)]">
+              <RailwayTileOverview
+                copy={copy}
+                selectedDetail={selectedDetail}
+              />
             </div>
           </div>
 

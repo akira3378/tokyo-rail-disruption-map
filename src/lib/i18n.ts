@@ -27,7 +27,7 @@ export const copies = {
   zh: {
     htmlLang: "zh-CN",
     eyebrow: "ODPT TrainInformation",
-    title: "Tokyo Rail Disruption Map",
+    title: "东京铁路运行异常地图",
     subtitle: "首都圈铁路运行异常可视化。当前版本通过服务端 API 获取实时运行信息。",
     controls: {
       language: "语言",
@@ -41,13 +41,19 @@ export const copies = {
     map: {
       title: "运行状态总览",
       description:
-        "线路来自 ODPT Railway；当前运行异常由 ODPT TrainInformation 提供。",
+        "显示免费铁路地图图层；选择异常线路后会定位详情里提到的车站。",
       ariaLabel: "东京铁路运行状态总览",
       scenario: "数据快照",
       zoomIn: "放大",
       zoomOut: "缩小",
-      resetZoom: "适应",
+      resetZoom: "重置视图",
       zoomLevel: "缩放",
+      selectedStations: "已定位：{stations}",
+      noStationTarget: "选择异常线路后，会尝试从详情中匹配车站并在地图上标出。",
+      freeLayerLabel: "免费瓦片",
+      lineFallbackLabel: "线路级信息",
+      lineFallbackDescription:
+        "当前详情没有可定位的具体车站，因此只显示线路异常提示。",
     },
     detail: {
       title: "详情",
@@ -65,10 +71,13 @@ export const copies = {
     sidePanel: {
       sourceName: "ODPT TrainInformation",
       supplementalSourceName: "补充来源",
-      sourceNote: "来源：实时运行信息",
-      countLabel: "{count} 条",
+      sourceNote:
+        "范围：仅显示 ODPT 当前公开/返回的数据，可能不覆盖所有运营方和实际运行异常。",
+      sourceReference: "官方说明",
+      sourceCatalog: "数据目录",
+      countUnit: "条",
       openDetail: "查看详情",
-      noAbnormal: "当前 ODPT 没有返回异常线路",
+      noAbnormal: "当前 ODPT 数据未返回可显示的异常线路",
       validUntil: "有效至",
     },
     legend: "状态图例",
@@ -79,7 +88,7 @@ export const copies = {
   ja: {
     htmlLang: "ja",
     eyebrow: "ODPT TrainInformation",
-    title: "Tokyo Rail Disruption Map",
+    title: "東京鉄道運行異常マップ",
     subtitle: "首都圏鉄道の運行異常を可視化します。現在はサーバー API 経由でリアルタイム運行情報を取得します。",
     controls: {
       language: "言語",
@@ -93,13 +102,19 @@ export const copies = {
     map: {
       title: "運行ステータス一覧",
       description:
-        "路線は ODPT Railway、異常情報は ODPT TrainInformation から取得します。",
+        "無料の鉄道マップレイヤーを表示し、異常路線を選ぶと詳細内の駅名を地図上に示します。",
       ariaLabel: "東京圏鉄道運行ステータス一覧",
       scenario: "データスナップショット",
       zoomIn: "拡大",
       zoomOut: "縮小",
-      resetZoom: "全体",
+      resetZoom: "表示範囲を戻す",
       zoomLevel: "ズーム",
+      selectedStations: "表示中の駅：{stations}",
+      noStationTarget: "異常路線を選ぶと、詳細文から駅名を抽出して地図上に表示します。",
+      freeLayerLabel: "無料タイル",
+      lineFallbackLabel: "路線単位の情報",
+      lineFallbackDescription:
+        "現在の詳細には地図上に特定できる駅名がないため、路線の異常のみを表示しています。",
     },
     detail: {
       title: "詳細",
@@ -117,10 +132,13 @@ export const copies = {
     sidePanel: {
       sourceName: "ODPT TrainInformation",
       supplementalSourceName: "補足データ",
-      sourceNote: "出典：リアルタイム運行情報",
-      countLabel: "{count}件",
+      sourceNote:
+        "範囲：ODPT が現在公開・返却しているデータのみを表示しており、すべての事業者・実際の運行異常を網羅するものではありません。",
+      sourceReference: "公式説明",
+      sourceCatalog: "データカタログ",
+      countUnit: "件",
       openDetail: "詳細",
-      noAbnormal: "現在 ODPT から異常路線は返っていません",
+      noAbnormal: "現在の ODPT データには表示できる異常路線がありません",
       validUntil: "有効期限",
     },
     legend: "ステータス凡例",
@@ -146,13 +164,19 @@ export const copies = {
     map: {
       title: "Operation Status Overview",
       description:
-        "Lines come from ODPT Railway, with current disruptions from ODPT TrainInformation.",
+        "Shows a free railway map layer and marks stations mentioned by the selected disruption.",
       ariaLabel: "Tokyo rail operation status overview",
       scenario: "Data snapshot",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
-      resetZoom: "Fit",
+      resetZoom: "Reset view",
       zoomLevel: "Zoom",
+      selectedStations: "Located: {stations}",
+      noStationTarget: "Select a disrupted line to mark stations found in the detail text.",
+      freeLayerLabel: "Free tiles",
+      lineFallbackLabel: "Line-level notice",
+      lineFallbackDescription:
+        "This detail does not include a locatable station name, so only the line notice is shown.",
     },
     detail: {
       title: "Detail",
@@ -170,10 +194,13 @@ export const copies = {
     sidePanel: {
       sourceName: "ODPT TrainInformation",
       supplementalSourceName: "Supplemental source",
-      sourceNote: "Source: live operation notices",
-      countLabel: "{count}",
+      sourceNote:
+        "Scope: shows only data currently published or returned by ODPT; it may not cover every operator or real-world disruption.",
+      sourceReference: "Official note",
+      sourceCatalog: "Data catalog",
+      countUnit: "",
       openDetail: "Details",
-      noAbnormal: "ODPT currently returns no disrupted lines",
+      noAbnormal: "Current ODPT data returns no displayable disrupted lines",
       validUntil: "Valid until",
     },
     legend: "Status Legend",

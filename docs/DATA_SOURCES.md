@@ -26,9 +26,9 @@ The useful entity groups for this application are:
 - `odpt:TrainTimetable`: train-level timetable metadata where available
 
 The live implementation uses `src/app/api/railway-snapshot/route.ts` and
-`src/lib/sources/odpt/client.ts`. The repository also includes
-`scripts/import-odpt.mjs` for local inspection of operator, railway, station,
-and TrainInformation records while developing mappers.
+`src/lib/sources/odpt/client.ts`. The app fetches live ODPT data through the
+server route and does not keep a local raw-data import workflow in the
+repository.
 
 ## ODPT Integration Boundary
 
@@ -88,7 +88,7 @@ The project can support two update loops:
 1. Static network data
    - Source: `odpt:Railway`, `odpt:Station`, or GTFS static feeds
    - Suggested refresh: daily or weekly
-   - Storage: JSON in `data/` for early development, database table later
+   - Storage: server-side cache or database table if historical tracking becomes necessary
 
 2. Operation information
    - Source: `odpt:TrainInformation` or GTFS-RT alerts where available
@@ -128,5 +128,5 @@ RailwaySnapshot
 UI components
 ```
 
-This lets the app move from local ODPT JSON to scheduled ingestion, GTFS-RT, or
+This lets the app move from live ODPT calls to scheduled ingestion, GTFS-RT, or
 another licensed provider without rewriting the map UI.

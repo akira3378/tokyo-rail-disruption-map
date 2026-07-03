@@ -92,18 +92,14 @@ export function LineStatusList({
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
-      <div className="flex items-end justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-[var(--foreground)]">
             {title}
           </h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-            {copy.sidePanel.sourceNote}
-          </p>
+          <CoverageNote copy={copy} />
         </div>
-        <span className="rounded-full border border-[var(--border)] bg-[var(--panel-strong)] px-2.5 py-1 text-xs font-semibold text-[var(--muted)]">
-          {formatCount(copy.sidePanel.countLabel, abnormalLines.length)}
-        </span>
+        <CountBadge count={abnormalLines.length} copy={copy} />
       </div>
       {abnormalLines.length === 0 ? (
         <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-sm font-medium text-[var(--muted)]">
@@ -171,18 +167,21 @@ export function Toolbar({
   onLocaleChange: (locale: Locale) => void;
   onThemeChange: (theme: ThemeMode) => void;
 }) {
+  const nextTheme: ThemeMode = theme === "light" ? "dark" : "light";
+
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
-      <div className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1">
-        <span className="px-2 font-semibold text-[var(--muted)]">
-          {copy.controls.language}
-        </span>
+    <div className="flex flex-wrap items-center justify-end gap-2 text-xs">
+      <div
+        aria-label={copy.controls.language}
+        className="grid grid-cols-3 gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1"
+        role="group"
+      >
         {(["zh", "ja", "en"] as const).map((item) => (
           <button
             key={item}
             type="button"
             onClick={() => onLocaleChange(item)}
-            className={`rounded px-2.5 py-1 font-semibold transition ${
+            className={`h-8 w-11 rounded text-center font-semibold transition ${
               locale === item
                 ? "bg-[var(--accent)] text-white"
                 : "text-[var(--muted)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
@@ -192,26 +191,61 @@ export function Toolbar({
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1">
-        <span className="px-2 font-semibold text-[var(--muted)]">
-          {copy.controls.theme}
-        </span>
-        {(["light", "dark"] as const).map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onThemeChange(item)}
-            className={`rounded px-2.5 py-1 font-semibold transition ${
-              theme === item
-                ? "bg-[var(--accent)] text-white"
-                : "text-[var(--muted)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
-            }`}
-          >
-            {themeLabels[item][locale]}
-          </button>
-        ))}
-      </div>
+      <button
+        aria-label={`${copy.controls.theme}: ${themeLabels[theme][locale]}`}
+        className="grid h-10 w-10 place-items-center rounded-md border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
+        title={themeLabels[theme][locale]}
+        type="button"
+        onClick={() => onThemeChange(nextTheme)}
+      >
+        <ThemeIcon theme={theme} />
+      </button>
     </div>
+  );
+}
+
+function ThemeIcon({ theme }: { theme: ThemeMode }) {
+  if (theme === "light") {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2.25"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+      </svg>
+    );
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className="text-2xl font-bold leading-none"
+    >
+      ☾
+    </span>
+  );
+}
+
+function CountBadge({
+  count,
+  copy,
+}: {
+  count: number;
+  copy: (typeof copies)[Locale];
+}) {
+  return (
+    <span className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-xs font-semibold text-[var(--muted)]">
+      <span>{count}</span>
+      {copy.sidePanel.countUnit ? (
+        <span className="ml-1.5">{copy.sidePanel.countUnit}</span>
+      ) : null}
+    </span>
   );
 }
 
@@ -269,6 +303,27 @@ function formatIncidentSource(
     .join(" / ");
 }
 
-function formatCount(template: string, count: number) {
-  return template.replace("{count}", String(count));
+function CoverageNote({ copy }: { copy: (typeof copies)[Locale] }) {
+  return (
+    <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+      {copy.sidePanel.sourceNote}{" "}
+      <a
+        className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+        href="https://www.odpt.org/"
+        rel="noreferrer"
+        target="_blank"
+      >
+        {copy.sidePanel.sourceReference}
+      </a>{" "}
+      /{" "}
+      <a
+        className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+        href="https://ckan.odpt.org/dataset"
+        rel="noreferrer"
+        target="_blank"
+      >
+        {copy.sidePanel.sourceCatalog}
+      </a>
+    </p>
+  );
 }

@@ -1,8 +1,3 @@
-import {
-  lines as fallbackLines,
-  segments as fallbackSegments,
-  stations as fallbackStations,
-} from "../rail-network";
 import type {
   OperationSnapshot,
   Incident,
@@ -29,10 +24,6 @@ export function buildRailwaySnapshot(
     stations: Station[];
     lines: RailLine[];
     segments: Segment[];
-  } = {
-    stations: fallbackStations,
-    lines: fallbackLines,
-    segments: fallbackSegments,
   },
 ): RailwaySnapshot {
   const viewLines: LineViewModel[] = network.lines.map((line) => {

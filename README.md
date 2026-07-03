@@ -10,8 +10,8 @@ Rail disruption information is operationally dense: users need to understand whi
 
 This project demonstrates:
 
-- structured data modeling for lines, stations, segments, incidents, and data snapshots
-- interactive SVG visualization without copying official map designs
+- structured data modeling for lines, incidents, and data snapshots
+- public-transit map overview with station markers for selected disruptions
 - responsive dashboard UI for desktop and mobile
 - a clean data access layer backed by a documented open transport data source
 - a deployment-ready Next.js application for Vercel
@@ -19,30 +19,22 @@ This project demonstrates:
 ## Features
 
 - ODPT Railway-backed operation status overview for Tokyo-area rail lines
-- Structured rail network data instead of hard-coded UI-only line definitions
-- Structured incident data with line-level and section-level scopes
+- ODPT Railway-backed line list instead of hard-coded UI-only line definitions
+- Structured incident data with line-level scopes
 - Distinct visual states:
   - Normal
   - Delayed
   - Suspended
   - Reduced service
   - Unknown
-- Clickable lines and segments with detail panel
+- Clickable abnormal line list with detail panel
 - Chinese, Japanese, and English interface copy managed through a typed dictionary
 - Light and dark display modes using shared design tokens
-- Map zoom controls with bounded scale and reset
+- Free OSM/OpenRailwayMap tile overview with station markers for selected disruptions
 - ODPT TrainInformation server API route with short cache headers
 - Single current-data snapshot on the main page, refreshed by the browser every 60 seconds
 - Responsive layout for desktop and mobile screens
 - No database dependency in the first ODPT-backed MVP
-
-## Included Lines
-
-- 東急田園都市線
-- 東京メトロ半蔵門線
-- JR山手線
-- JR南武線
-- 横須賀線
 
 ## Data Structure Design
 
@@ -50,15 +42,12 @@ The application separates the domain model from the UI.
 
 Core data types live in `src/lib/types.ts`:
 
-- `Station`: station id, display names, and schematic coordinates
-- `Station.display`: optional metadata for major stations, transfers, and mobile label priority
-- `RailLine`: operator, color, ordered station ids, and optional display importance
-- `Segment`: line section between two adjacent stations
+- `Station`: station id and optional display metadata retained for future station data
+- `RailLine`: operator, color, and source metadata
+- `Segment`: optional line section model retained for future provider data
 - `Incident`: abnormal operation information
 - `OperationSnapshot`: current provider snapshot with resolved incident records
-- `RailwaySnapshot`: UI-ready view model with lines, segments, stations, and the current `operation`
-
-Static rail network data lives in `src/lib/rail-network.ts`.
+- `RailwaySnapshot`: UI-ready view model with lines and the current `operation`
 
 ODPT live data is fetched by a server API route and mapped through source
 adapters:
@@ -93,10 +82,10 @@ src/
     sources/
       odpt/
         client.ts
+        railway-network-mapper.ts
         railway-mapping.ts
         train-information-mapper.ts
         types.ts
-    rail-network.ts
     status.ts
     types.ts
 ```
@@ -112,9 +101,9 @@ ODPT TrainInformation API
         ↓
 Source fields + minimal UI adapter
         ↓
-Resolved line and segment statuses
+Resolved line statuses
         ↓
-SVG map, status list, and detail panel
+Transit map overview, status list, and detail panel
 ```
 
 ## Tech Stack
@@ -123,9 +112,9 @@ SVG map, status list, and detail panel
 - React
 - TypeScript
 - Tailwind CSS
-- SVG for the custom schematic map
+- OpenStreetMap and OpenRailwayMap raster tiles for the free railway overview
 
-No map SDK, database, or crawler is used in this MVP.
+No database or crawler is used in this MVP.
 
 ## Local Development
 
@@ -172,6 +161,10 @@ Configure `ODPT_API_KEY` in `.env.local` for local development and in Vercel
 environment variables for deployment. The key is server-only and is never sent
 to the browser.
 
+The map overview uses public OpenStreetMap and OpenRailwayMap tiles directly in
+the browser. Keep usage small, show attribution, and do not bulk-download or
+prefetch tiles.
+
 ## Data Source Policy
 
 Current version:
@@ -200,42 +193,6 @@ GET /api/railway-snapshot
 The route reads `ODPT_API_KEY` from server environment variables, calls
 `odpt:TrainInformation`, and returns a normalized `RailwaySnapshot` to the
 browser. Responses use a short server cache to avoid unnecessary ODPT calls.
-
-The repository also keeps a non-scraping ODPT import script for local
-inspection and mapper development:
-
-```bash
-ODPT_API_KEY=your_key npm run import:odpt
-```
-
-The script fetches documented ODPT resources and stores JSON in `data/odpt/raw/`.
-Local raw ODPT files are ignored by git so the project does not republish provider
-data by accident.
-
-Default import scope:
-
-- `odpt:Operator`
-- `odpt:Railway`
-- `odpt:Station`
-- `odpt:TrainInformation`
-
-Large timetable resources are opt-in because they are not needed for the
-disruption-map MVP:
-
-```bash
-ODPT_RESOURCES=operators,railways,stations,train-information,station-timetables,train-timetables npm run import:odpt
-```
-
-Opt-in resources:
-
-- `odpt:StationTimetable`
-- `odpt:TrainTimetable`
-
-After importing, validate local JSON readiness with:
-
-```bash
-npm run validate:odpt
-```
 
 ODPT usage note: the official terms reviewed for this project do not describe
 per-request billing for the API itself. They do state that provider/network

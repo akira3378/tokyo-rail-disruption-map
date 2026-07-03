@@ -18,7 +18,7 @@ This project demonstrates:
 
 ## Features
 
-- Simplified custom schematic map for selected Tokyo-area rail lines
+- ODPT Railway-backed operation status overview for Tokyo-area rail lines
 - Structured rail network data instead of hard-coded UI-only line definitions
 - Structured incident data with line-level and section-level scopes
 - Distinct visual states:

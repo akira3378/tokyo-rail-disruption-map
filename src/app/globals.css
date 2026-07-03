@@ -103,6 +103,13 @@ button {
   cursor: grabbing;
 }
 
+.status-overview-reason {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .status-badge {
   display: inline-flex;
   flex-shrink: 0;

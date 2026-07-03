@@ -4,7 +4,7 @@ import {
   ODPT_REVALIDATE_SECONDS,
 } from "@/lib/providers/odpt-live-provider";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

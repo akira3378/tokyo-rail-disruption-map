@@ -5,7 +5,7 @@ import type {
   RailStatus,
 } from "@/lib/types";
 import {
-  lineIdByOdptRailway,
+  getLineIdFromOdptRailway,
   odptTrainInformationStatusRules,
 } from "./railway-mapping";
 import type { OdptTrainInformationRecord } from "./types";
@@ -42,13 +42,15 @@ function mapOdptTrainInformationRecord(
   resolutions: Record<string, OdptIncidentResolution>,
 ): Incident | undefined {
   const resolution = resolutions[record["owl:sameAs"]];
-  const fallbackLineId = lineIdByOdptRailway[record["odpt:railway"]];
+  const fallbackLineId = getLineIdFromOdptRailway(record["odpt:railway"]);
 
-  if (!resolution && !fallbackLineId) {
+  const inferredStatus = inferTrainInformationStatus(record);
+
+  if (!resolution && inferredStatus === "normal") {
     return undefined;
   }
 
-  const status = resolution?.status ?? inferTrainInformationStatus(record);
+  const status = resolution?.status ?? inferredStatus;
   const railwayName =
     record["odpt:railwayTitle"]?.ja ?? record["odpt:railway"].split(".").pop();
   const statusText =
@@ -82,9 +84,7 @@ function mapOdptTrainInformationRecord(
   };
 }
 
-function inferTrainInformationStatus(
-  record: OdptTrainInformationRecord,
-): Exclude<RailStatus, "normal"> {
+function inferTrainInformationStatus(record: OdptTrainInformationRecord): RailStatus {
   const fields = [
     record["odpt:trainInformationStatus"]?.ja,
     record["odpt:trainInformationStatus"]?.en,
@@ -95,6 +95,10 @@ function inferTrainInformationStatus(
     .join(" ")
     .toLowerCase();
 
+  if (isNormalOperationText(fields)) {
+    return "normal";
+  }
+
   for (const rule of odptTrainInformationStatusRules) {
     if (rule.patterns.some((pattern) => fields.includes(pattern.toLowerCase()))) {
       return rule.status;
@@ -102,6 +106,18 @@ function inferTrainInformationStatus(
   }
 
   return "unknown";
+}
+
+function isNormalOperationText(fields: string) {
+  return [
+    "平常どおり",
+    "平常通り",
+    "平常運行",
+    "通常通り",
+    "遅延はありません",
+    "delay-free",
+    "normal",
+  ].some((pattern) => fields.includes(pattern.toLowerCase()));
 }
 
 function statusLabel(status: Exclude<RailStatus, "normal">) {

@@ -183,16 +183,25 @@ export function LineStatusList({
   statusText: Record<RailStatus, { label: string; description: string }>;
   onSelectLine: (lineId: string) => void;
 }) {
+  const sortedLines = [...lines].sort((a, b) => {
+    const aAbnormal = a.status === "normal" ? 1 : 0;
+    const bAbnormal = b.status === "normal" ? 1 : 0;
+
+    return aAbnormal - bAbnormal || a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name);
+  });
+
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
       <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
-      <div className="mt-3 grid gap-2">
-        {lines.map((line) => (
+      <div className="mt-3 grid max-h-[520px] gap-2 overflow-auto pr-1">
+        {sortedLines.map((line) => (
           <button
             key={line.id}
             type="button"
             onClick={() => onSelectLine(line.id)}
-            className="flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
+            className={`flex items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)] ${
+              line.status === "normal" ? "" : "rail-alert-blink"
+            }`}
           >
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold text-[var(--foreground)]">

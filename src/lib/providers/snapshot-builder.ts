@@ -1,12 +1,18 @@
-import { lines, segments, stations } from "../rail-network";
+import {
+  lines as fallbackLines,
+  segments as fallbackSegments,
+  stations as fallbackStations,
+} from "../rail-network";
 import type {
   OperationSnapshot,
   Incident,
   LineViewModel,
+  RailLine,
   RailStatus,
   RailwaySnapshot,
   Segment,
   SegmentViewModel,
+  Station,
 } from "../types";
 
 const statusPriority: Record<RailStatus, number> = {
@@ -19,18 +25,28 @@ const statusPriority: Record<RailStatus, number> = {
 
 export function buildRailwaySnapshot(
   operation: OperationSnapshot,
+  network: {
+    stations: Station[];
+    lines: RailLine[];
+    segments: Segment[];
+  } = {
+    stations: fallbackStations,
+    lines: fallbackLines,
+    segments: fallbackSegments,
+  },
 ): RailwaySnapshot {
-  const viewLines: LineViewModel[] = lines.map((line) => {
+  const viewLines: LineViewModel[] = network.lines.map((line) => {
     const lineIncident = operation.incidents.find(
       (incident) =>
         incident.scope.type === "line" && incident.scope.lineId === line.id,
     );
 
-    const lineSegments: SegmentViewModel[] = segments
+    const lineSegments: SegmentViewModel[] = network.segments
       .filter((segment) => segment.lineId === line.id)
       .map((segment) => {
         const segmentIncident =
-          findSegmentIncident(segment, operation.incidents) ?? lineIncident;
+          findSegmentIncident(segment, operation.incidents, network.lines) ??
+          lineIncident;
         const status: RailStatus = segmentIncident?.status ?? "normal";
 
         return {
@@ -64,12 +80,16 @@ export function buildRailwaySnapshot(
   return {
     operation,
     generatedAt: new Date().toISOString(),
-    stations,
+    stations: network.stations,
     lines: viewLines,
   };
 }
 
-function findSegmentIncident(segment: Segment, incidents: Incident[]) {
+function findSegmentIncident(
+  segment: Segment,
+  incidents: Incident[],
+  lines: RailLine[],
+) {
   return incidents.find((incident) => {
     if (incident.scope.type !== "segment") {
       return false;
@@ -79,11 +99,15 @@ function findSegmentIncident(segment: Segment, incidents: Incident[]) {
       return false;
     }
 
-    return segmentFallsWithinIncidentScope(segment, incident);
+    return segmentFallsWithinIncidentScope(segment, incident, lines);
   });
 }
 
-function segmentFallsWithinIncidentScope(segment: Segment, incident: Incident) {
+function segmentFallsWithinIncidentScope(
+  segment: Segment,
+  incident: Incident,
+  lines: RailLine[],
+) {
   if (incident.scope.type !== "segment") {
     return false;
   }

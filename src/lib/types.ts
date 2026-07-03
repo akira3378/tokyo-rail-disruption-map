@@ -1,4 +1,7 @@
-import type { OdptTrainInformationRecord } from "./sources/odpt/types";
+import type {
+  OdptRailwayRecord,
+  OdptTrainInformationRecord,
+} from "./sources/odpt/types";
 
 export type RailStatus =
   | "normal"
@@ -42,11 +45,17 @@ export type Segment = {
 export type RailLine = {
   id: string;
   name: string;
+  nameEn?: string;
   operator: string;
   color: string;
   stationIds: string[];
   display?: {
     importance?: number;
+  };
+  source?: {
+    provider: "odpt";
+    resourceType: "odpt:Railway";
+    raw: OdptRailwayRecord;
   };
 };
 

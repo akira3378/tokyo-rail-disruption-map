@@ -47,3 +47,17 @@ export type OdptTrainInformationRecord =
     "odpt:trainInformationRange"?: OdptLocalizedText;
     "odpt:trainInformationText"?: OdptLocalizedText;
   };
+
+export type OdptStationOrder = {
+  "odpt:index": number;
+  "odpt:station": string;
+  "odpt:stationTitle"?: OdptLocalizedText;
+};
+
+export type OdptRailwayRecord = OdptBaseRecord<"odpt:Railway"> & {
+  "dc:title"?: string;
+  "odpt:operator": string;
+  "odpt:railwayTitle"?: OdptLocalizedText;
+  "odpt:color"?: string;
+  "odpt:stationOrder"?: OdptStationOrder[];
+};

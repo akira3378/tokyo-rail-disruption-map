@@ -1,33 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { copies, statusCopies, type Locale, type ThemeMode } from "@/lib/i18n";
-import {
-  DEFAULT_ZOOM,
-  FOCUS_PADDING,
-  MAP_HEIGHT,
-  MAP_WIDTH,
-} from "@/lib/map/constants";
-import {
-  getBoundsZoom,
-  getFitZoom,
-  getLineBounds,
-  getSegmentBounds,
-  type MapBounds,
-} from "@/lib/map/bounds";
 import { buildDetailModel } from "@/lib/map/detail-model";
 import { formatTime } from "@/lib/map/format";
-import type { PointerEvent } from "react";
 import type { RailwaySnapshot, Selection } from "@/lib/types";
-import { RailSvg } from "./rail-map/rail-svg";
 import {
   DetailPanel,
   Legend,
   LineStatusList,
   Metric,
   Toolbar,
-  ZoomControls,
 } from "./rail-map/panels";
+import { RailStatusOverview } from "./rail-map/status-overview";
 
 const REFRESH_INTERVAL_MS = 60_000;
 
@@ -40,26 +25,11 @@ export function RailDisruptionMap({
 }: RailDisruptionMapProps) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [hoveredSegmentId, setHoveredSegmentId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>("zh");
   const [theme, setTheme] = useState<ThemeMode>("light");
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [isPanning, setIsPanning] = useState(false);
-  const mapViewportRef = useRef<HTMLDivElement>(null);
-  const panStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    scrollLeft: number;
-    scrollTop: number;
-  } | null>(null);
 
   const copy = copies[locale];
   const statusText = statusCopies[locale];
-  const stationById = useMemo(
-    () => new Map(snapshot.stations.map((station) => [station.id, station])),
-    [snapshot.stations],
-  );
 
   const selectedDetail = useMemo(
     () => buildDetailModel(snapshot, selection, locale),
@@ -69,16 +39,6 @@ export function RailDisruptionMap({
   const abnormalCount = snapshot.lines.filter(
     (line) => line.status !== "normal",
   ).length;
-
-  useEffect(() => {
-    const viewport = mapViewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    setZoom(getFitZoom(viewport));
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,110 +75,8 @@ export function RailDisruptionMap({
     };
   }, []);
 
-  const focusMapBounds = (bounds: MapBounds) => {
-    const viewport = mapViewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    const nextZoom = getBoundsZoom(viewport, bounds);
-    setZoom(nextZoom);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const left = Math.max(0, (bounds.minX - FOCUS_PADDING) * nextZoom);
-        const top = Math.max(0, (bounds.minY - FOCUS_PADDING) * nextZoom);
-
-        viewport.scrollTo({ left, top, behavior: "smooth" });
-      });
-    });
-  };
-
   const selectLine = (lineId: string) => {
     setSelection({ type: "line", lineId });
-
-    const bounds = getLineBounds(snapshot.lines, stationById, lineId);
-
-    if (bounds) {
-      focusMapBounds(bounds);
-    }
-  };
-
-  const selectSegment = (segmentId: string, lineId: string) => {
-    setSelection({ type: "segment", segmentId, lineId });
-
-    const bounds = getSegmentBounds(snapshot.lines, stationById, segmentId, lineId);
-
-    if (bounds) {
-      focusMapBounds(bounds);
-    }
-  };
-
-  const resetMapView = () => {
-    const viewport = mapViewportRef.current;
-
-    if (!viewport) {
-      setZoom(DEFAULT_ZOOM);
-      return;
-    }
-
-    const nextZoom = getFitZoom(viewport);
-    setZoom(nextZoom);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
-      });
-    });
-  };
-
-  const startMapPan = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === "mouse" && event.button !== 0) {
-      return;
-    }
-
-    const viewport = mapViewportRef.current;
-
-    if (!viewport) {
-      return;
-    }
-
-    panStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      scrollLeft: viewport.scrollLeft,
-      scrollTop: viewport.scrollTop,
-    };
-    setIsPanning(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const moveMapPan = (event: PointerEvent<HTMLDivElement>) => {
-    const panState = panStateRef.current;
-    const viewport = mapViewportRef.current;
-
-    if (!panState || !viewport || panState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    viewport.scrollLeft = panState.scrollLeft - (event.clientX - panState.startX);
-    viewport.scrollTop = panState.scrollTop - (event.clientY - panState.startY);
-    event.preventDefault();
-  };
-
-  const endMapPan = (event: PointerEvent<HTMLDivElement>) => {
-    if (panStateRef.current?.pointerId !== event.pointerId) {
-      return;
-    }
-
-    panStateRef.current = null;
-    setIsPanning(false);
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
   };
 
   return (
@@ -260,7 +118,8 @@ export function RailDisruptionMap({
               <Metric
                 label={copy.metrics.updated}
                 value={formatTime(
-                  snapshot.operation.incidents[0]?.updatedAt,
+                  snapshot.operation.incidents[0]?.updatedAt ??
+                    snapshot.generatedAt,
                   locale,
                   copy.noTime,
                 )}
@@ -280,47 +139,15 @@ export function RailDisruptionMap({
                   {copy.map.description}
                 </p>
               </div>
-              <div className="grid gap-2 md:justify-items-end">
-                <ZoomControls
-                  copy={copy}
-                  zoom={zoom}
-                  onZoomChange={setZoom}
-                  onReset={resetMapView}
-                />
-              </div>
             </div>
 
-            <div
-              ref={mapViewportRef}
-              className={`map-pan-viewport flex-1 overflow-auto bg-[var(--map-bg)] ${
-                isPanning ? "is-panning" : ""
-              }`}
-              onPointerDown={startMapPan}
-              onPointerMove={moveMapPan}
-              onPointerUp={endMapPan}
-              onPointerCancel={endMapPan}
-              onPointerLeave={endMapPan}
-            >
-              <div
-                className="relative"
-                style={{
-                  width: `${MAP_WIDTH * zoom}px`,
-                  height: `${MAP_HEIGHT * zoom}px`,
-                }}
-              >
-                <RailSvg
-                  ariaLabel={copy.map.ariaLabel}
-                  lines={snapshot.lines}
-                  stations={snapshot.stations}
-                  stationById={stationById}
-                  selection={selection}
-                  hoveredSegmentId={hoveredSegmentId}
-                  statusText={statusText}
-                  zoom={zoom}
-                  onSelectSegment={selectSegment}
-                  onHover={setHoveredSegmentId}
-                />
-              </div>
+            <div className="flex-1 overflow-auto bg-[var(--map-bg)]">
+              <RailStatusOverview
+                lines={snapshot.lines}
+                selection={selection}
+                statusText={statusText}
+                onSelectLine={selectLine}
+              />
             </div>
           </div>
 

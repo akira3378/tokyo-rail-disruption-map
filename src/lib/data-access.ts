@@ -10,7 +10,11 @@ const loadingScenario: OperationSnapshot = {
 };
 
 export function getInitialRailwaySnapshot(): RailwaySnapshot {
-  return buildRailwaySnapshot(loadingScenario);
+  return buildRailwaySnapshot(loadingScenario, {
+    stations: [],
+    lines: [],
+    segments: [],
+  });
 }
 
 export function getActiveProvider() {

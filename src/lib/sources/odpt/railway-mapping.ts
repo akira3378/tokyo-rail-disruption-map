@@ -1,19 +1,15 @@
 import type { RailStatus } from "@/lib/types";
 
 /**
- * Bridge ODPT railway identifiers to this app's current schematic network.
+ * Stable local id derived from the ODPT railway identifier.
  *
- * The source data already contains many more railways than the first map view.
- * Keep this mapping explicit so adding more Tokyo-area lines is a data change,
- * not a UI rewrite.
+ * We keep ODPT's `owl:sameAs` as the canonical source identifier and only
+ * derive this UI id because React keys, URLs, and selections need a compact
+ * app-local string.
  */
-export const lineIdByOdptRailway: Record<string, string> = {
-  "odpt.Railway:Tokyu.Denentoshi": "denentoshi",
-  "odpt.Railway:TokyoMetro.Hanzomon": "hanzomon",
-  "odpt.Railway:JR-East.Yamanote": "yamanote",
-  "odpt.Railway:JR-East.Nambu": "nambu",
-  "odpt.Railway:JR-East.Yokosuka": "yokosuka",
-};
+export function getLineIdFromOdptRailway(odptRailway: string) {
+  return odptRailway.replace(/^odpt\.Railway:/, "").replace(/[^a-zA-Z0-9]+/g, "-");
+}
 
 export const odptTrainInformationStatusRules: Array<{
   status: Exclude<RailStatus, "normal">;

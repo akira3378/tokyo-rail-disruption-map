@@ -220,7 +220,7 @@ function MapSelectionNote({
   targets: StationMapTarget[];
 }) {
   return (
-    <div className="pointer-events-none absolute left-3 top-3 z-20 max-w-[min(24rem,calc(100%-1.5rem))] rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-3 py-2 text-xs leading-5 text-[var(--muted)] shadow-sm">
+    <div className="pointer-events-none absolute left-3 right-14 top-3 z-20 max-w-96 rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-3 py-2 text-xs leading-5 text-[var(--muted)] shadow-sm">
       {targets.length > 0
         ? formatStationNote(copy.map.selectedStations, targets)
         : copy.map.noStationTarget}

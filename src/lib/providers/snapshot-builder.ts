@@ -1,6 +1,6 @@
 import { lines, segments, stations } from "../rail-network";
 import type {
-  DemoScenario,
+  OperationSnapshot,
   Incident,
   LineViewModel,
   RailStatus,
@@ -17,9 +17,11 @@ const statusPriority: Record<RailStatus, number> = {
   suspended: 4,
 };
 
-export function buildRailwaySnapshot(scenario: DemoScenario): RailwaySnapshot {
+export function buildRailwaySnapshot(
+  operation: OperationSnapshot,
+): RailwaySnapshot {
   const viewLines: LineViewModel[] = lines.map((line) => {
-    const lineIncident = scenario.incidents.find(
+    const lineIncident = operation.incidents.find(
       (incident) =>
         incident.scope.type === "line" && incident.scope.lineId === line.id,
     );
@@ -28,7 +30,7 @@ export function buildRailwaySnapshot(scenario: DemoScenario): RailwaySnapshot {
       .filter((segment) => segment.lineId === line.id)
       .map((segment) => {
         const segmentIncident =
-          findSegmentIncident(segment, scenario.incidents) ?? lineIncident;
+          findSegmentIncident(segment, operation.incidents) ?? lineIncident;
         const status: RailStatus = segmentIncident?.status ?? "normal";
 
         return {
@@ -60,7 +62,7 @@ export function buildRailwaySnapshot(scenario: DemoScenario): RailwaySnapshot {
   });
 
   return {
-    scenario,
+    operation,
     generatedAt: new Date().toISOString(),
     stations,
     lines: viewLines,

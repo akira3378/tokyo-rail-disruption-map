@@ -18,30 +18,27 @@ import {
 import { buildDetailModel } from "@/lib/map/detail-model";
 import { formatTime } from "@/lib/map/format";
 import type { PointerEvent } from "react";
-import type { DemoScenario, RailwaySnapshot, Selection } from "@/lib/types";
+import type { RailwaySnapshot, Selection } from "@/lib/types";
 import { RailSvg } from "./rail-map/rail-svg";
 import {
   DetailPanel,
   Legend,
   LineStatusList,
   Metric,
-  ScenarioSwitcher,
   Toolbar,
   ZoomControls,
 } from "./rail-map/panels";
 
+const REFRESH_INTERVAL_MS = 60_000;
+
 type RailDisruptionMapProps = {
   initialSnapshot: RailwaySnapshot;
-  snapshotsByScenario: Record<string, RailwaySnapshot>;
-  scenarios: DemoScenario[];
 };
 
 export function RailDisruptionMap({
   initialSnapshot,
-  snapshotsByScenario,
-  scenarios,
 }: RailDisruptionMapProps) {
-  const [scenarioId, setScenarioId] = useState(initialSnapshot.scenario.id);
+  const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [hoveredSegmentId, setHoveredSegmentId] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>("zh");
@@ -57,7 +54,6 @@ export function RailDisruptionMap({
     scrollTop: number;
   } | null>(null);
 
-  const snapshot = snapshotsByScenario[scenarioId] ?? initialSnapshot;
   const copy = copies[locale];
   const statusText = statusCopies[locale];
   const stationById = useMemo(
@@ -82,6 +78,41 @@ export function RailDisruptionMap({
     }
 
     setZoom(getFitZoom(viewport));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLiveSnapshot() {
+      try {
+        const response = await fetch("/api/railway-snapshot", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Snapshot request failed: ${response.status}`);
+        }
+
+        const nextSnapshot = (await response.json()) as RailwaySnapshot;
+
+        if (!cancelled) {
+          setSnapshot(nextSnapshot);
+        }
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    void loadLiveSnapshot();
+    const intervalId = window.setInterval(
+      loadLiveSnapshot,
+      REFRESH_INTERVAL_MS,
+    );
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const focusMapBounds = (bounds: MapBounds) => {
@@ -229,7 +260,7 @@ export function RailDisruptionMap({
               <Metric
                 label={copy.metrics.updated}
                 value={formatTime(
-                  snapshot.scenario.incidents[0]?.updatedAt,
+                  snapshot.operation.incidents[0]?.updatedAt,
                   locale,
                   copy.noTime,
                 )}
@@ -250,18 +281,6 @@ export function RailDisruptionMap({
                 </p>
               </div>
               <div className="grid gap-2 md:justify-items-end">
-                {scenarios.length > 1 ? (
-                  <ScenarioSwitcher
-                    label={copy.map.scenario}
-                    locale={locale}
-                    scenarioId={scenarioId}
-                    scenarios={scenarios}
-                    onChange={(nextScenarioId) => {
-                      setScenarioId(nextScenarioId);
-                      setSelection(null);
-                    }}
-                  />
-                ) : null}
                 <ZoomControls
                   copy={copy}
                   zoom={zoom}
@@ -308,7 +327,7 @@ export function RailDisruptionMap({
           <aside className="flex flex-col gap-4">
             <DetailPanel
               detail={selectedDetail}
-              scenario={snapshot.scenario}
+              operation={snapshot.operation}
               copy={copy}
               locale={locale}
               statusText={statusText}

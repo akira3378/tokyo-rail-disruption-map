@@ -1,25 +1,22 @@
-import type { DemoScenario, Incident, RailStatus } from "../types";
-import type { OdptIncidentResolution, OdptTrainInformationRecord } from "./odpt-types";
+import type {
+  Incident,
+  IncidentScope,
+  OperationSnapshot,
+  RailStatus,
+} from "@/lib/types";
+import {
+  lineIdByOdptRailway,
+  odptTrainInformationStatusRules,
+} from "./railway-mapping";
+import type { OdptTrainInformationRecord } from "./types";
 
-const railwayIdByOdptRailway: Record<string, string> = {
-  "odpt.Railway:Tokyu.Denentoshi": "denentoshi",
-  "odpt.Railway:TokyoMetro.Hanzomon": "hanzomon",
-  "odpt.Railway:JR-East.Yamanote": "yamanote",
-  "odpt.Railway:JR-East.Nambu": "nambu",
-  "odpt.Railway:JR-East.Yokosuka": "yokosuka",
+export type OdptIncidentResolution = {
+  status: Exclude<RailStatus, "normal">;
+  scope: IncidentScope;
+  affectedArea: string;
 };
 
-const statusRules: Array<{
-  status: Exclude<RailStatus, "normal">;
-  patterns: string[];
-}> = [
-  { status: "suspended", patterns: ["運転見合わせ", "運休", "suspended"] },
-  { status: "reduced", patterns: ["運転本数", "減少", "reduced"] },
-  { status: "delayed", patterns: ["遅延", "delay", "delayed"] },
-  { status: "unknown", patterns: ["確認中", "unknown", "confirming"] },
-];
-
-export function normalizeOdptTrainInformationRecords(
+export function mapOdptTrainInformationToOperationSnapshot(
   records: OdptTrainInformationRecord[],
   options: {
     id: string;
@@ -27,7 +24,7 @@ export function normalizeOdptTrainInformationRecords(
     description: string;
     resolutions?: Record<string, OdptIncidentResolution>;
   },
-): DemoScenario {
+): OperationSnapshot {
   const resolutions = options.resolutions ?? {};
 
   return {
@@ -35,27 +32,23 @@ export function normalizeOdptTrainInformationRecords(
     name: options.name,
     description: options.description,
     incidents: records
-      .map((record) => normalizeOdptTrainInformation(record, resolutions))
+      .map((record) => mapOdptTrainInformationRecord(record, resolutions))
       .filter((incident): incident is Incident => Boolean(incident)),
   };
 }
 
-function normalizeOdptTrainInformation(
+function mapOdptTrainInformationRecord(
   record: OdptTrainInformationRecord,
   resolutions: Record<string, OdptIncidentResolution>,
 ): Incident | undefined {
   const resolution = resolutions[record["owl:sameAs"]];
-  const fallbackLineId = railwayIdByOdptRailway[record["odpt:railway"]];
+  const fallbackLineId = lineIdByOdptRailway[record["odpt:railway"]];
 
   if (!resolution && !fallbackLineId) {
     return undefined;
   }
 
-  const status = resolution?.status ?? inferStatus(record);
-  const scope = resolution?.scope ?? {
-    type: "line" as const,
-    lineId: fallbackLineId,
-  };
+  const status = resolution?.status ?? inferTrainInformationStatus(record);
   const railwayName =
     record["odpt:railwayTitle"]?.ja ?? record["odpt:railway"].split(".").pop();
   const statusText =
@@ -74,14 +67,22 @@ function normalizeOdptTrainInformation(
     status,
     title: `${railwayName} ${statusText}`,
     reason: record["odpt:trainInformationText"]?.ja ?? cause,
-    scope,
+    scope: resolution?.scope ?? {
+      type: "line",
+      lineId: fallbackLineId,
+    },
     affectedArea: rangeText,
     updatedAt: record["dc:date"],
     note: `ODPT TrainInformation: ${record["owl:sameAs"]}`,
+    source: {
+      provider: "odpt",
+      resourceType: "odpt:TrainInformation",
+      raw: record,
+    },
   };
 }
 
-function inferStatus(
+function inferTrainInformationStatus(
   record: OdptTrainInformationRecord,
 ): Exclude<RailStatus, "normal"> {
   const fields = [
@@ -94,7 +95,7 @@ function inferStatus(
     .join(" ")
     .toLowerCase();
 
-  for (const rule of statusRules) {
+  for (const rule of odptTrainInformationStatusRules) {
     if (rule.patterns.some((pattern) => fields.includes(pattern.toLowerCase()))) {
       return rule.status;
     }

@@ -1,3 +1,5 @@
+import type { OdptTrainInformationRecord } from "./sources/odpt/types";
+
 export type RailStatus =
   | "normal"
   | "delayed"
@@ -57,9 +59,14 @@ export type Incident = {
   affectedArea: string;
   updatedAt: string;
   note?: string;
+  source?: {
+    provider: "odpt";
+    resourceType: "odpt:TrainInformation";
+    raw: OdptTrainInformationRecord;
+  };
 };
 
-export type DemoScenario = {
+export type OperationSnapshot = {
   id: string;
   name: string;
   description: string;
@@ -78,7 +85,7 @@ export type LineViewModel = RailLine & {
 };
 
 export type RailwaySnapshot = {
-  scenario: DemoScenario;
+  operation: OperationSnapshot;
   generatedAt: string;
   stations: Station[];
   lines: LineViewModel[];

@@ -2,7 +2,8 @@
 
 This directory is reserved for local JSON datasets.
 
-The current app can read locally imported ODPT JSON from `data/odpt/raw/`.
+The running app fetches ODPT TrainInformation through the server API route.
+Local JSON under `data/odpt/raw/` is only for inspection and mapper development.
 Those raw files are ignored by git and should not be committed unless the
 specific dataset license explicitly allows redistribution.
 

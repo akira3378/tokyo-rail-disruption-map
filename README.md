@@ -2,7 +2,7 @@
 
 Tokyo Rail Disruption Map is a portfolio MVP for visualizing rail disruption states in the Tokyo metropolitan area. It focuses on frontend interaction, structured domain data, and a legal ODPT-based ingestion path.
 
-The current version reads locally imported ODPT TrainInformation data. It does not scrape Yahoo, NAVITIME, railway operator websites, official rail maps, or any other third-party website.
+The current version reads ODPT TrainInformation through a server API route. It does not scrape Yahoo, NAVITIME, railway operator websites, official rail maps, or any other third-party website.
 
 ## Why This Project
 
@@ -31,8 +31,8 @@ This project demonstrates:
 - Chinese, Japanese, and English interface copy managed through a typed dictionary
 - Light and dark display modes using shared design tokens
 - Map zoom controls with bounded scale and reset
-- ODPT TrainInformation local import and validation scripts
-- Single current-data snapshot on the main page, with an offline empty fallback if no local ODPT cache exists
+- ODPT TrainInformation server API route with short cache headers
+- Single current-data snapshot on the main page, refreshed by the browser every 60 seconds
 - Responsive layout for desktop and mobile screens
 - No database dependency in the first ODPT-backed MVP
 
@@ -55,25 +55,31 @@ Core data types live in `src/lib/types.ts`:
 - `RailLine`: operator, color, ordered station ids, and optional display importance
 - `Segment`: line section between two adjacent stations
 - `Incident`: abnormal operation information
-- `DemoScenario`: currently used as a named data snapshot container
-- `RailwaySnapshot`: resolved view model consumed by the UI
+- `OperationSnapshot`: current provider snapshot with resolved incident records
+- `RailwaySnapshot`: UI-ready view model with lines, segments, stations, and the current `operation`
 
 Static rail network data lives in `src/lib/rail-network.ts`.
 
-ODPT data is imported with `scripts/import-odpt.mjs`, validated with
-`scripts/validate-odpt-data.mjs`, and normalized through:
+ODPT live data is fetched by a server API route and mapped through source
+adapters:
 
-- `src/lib/providers/odpt-normalizer.ts`: maps source records into local `Incident` objects
-- `src/lib/providers/odpt-import-provider.ts`: reads local ODPT cache and creates the current snapshot
+- `src/app/api/railway-snapshot/route.ts`: server-only endpoint called by the browser
+- `src/lib/sources/odpt/client.ts`: ODPT API client with short revalidation
+- `src/lib/sources/odpt/types.ts`: ODPT JSON-LD source types, with Train/Bus/Airplane extension points
+- `src/lib/sources/odpt/train-information-mapper.ts`: minimal TrainInformation-to-UI adapter
 - `src/lib/providers/snapshot-builder.ts`: resolves incidents into line and segment view models
 
-The UI reads data through `src/lib/data-access.ts`, not directly from ODPT raw files. Raw provider data is kept out of React components.
+The browser never receives the ODPT API key and never calls ODPT directly. It
+only calls this app's `/api/railway-snapshot` endpoint.
 
 ## Architecture
 
 ```text
 src/
   app/
+    api/
+      railway-snapshot/
+        route.ts
     layout.tsx
     page.tsx
     globals.css
@@ -82,10 +88,14 @@ src/
   lib/
     data-access.ts
     providers/
-      odpt-import-provider.ts
-      odpt-normalizer.ts
-      odpt-types.ts
+      odpt-live-provider.ts
       snapshot-builder.ts
+    sources/
+      odpt/
+        client.ts
+        railway-mapping.ts
+        train-information-mapper.ts
+        types.ts
     rail-network.ts
     status.ts
     types.ts
@@ -94,13 +104,13 @@ src/
 ### Data Flow
 
 ```text
-ODPT TrainInformation import
+Browser
         ↓
-data/odpt/raw/train-information.json
+/api/railway-snapshot
         ↓
-odpt-import-provider
+ODPT TrainInformation API
         ↓
-Normalized Incident objects
+Source fields + minimal UI adapter
         ↓
 Resolved line and segment statuses
         ↓
@@ -158,13 +168,15 @@ Recommended flow:
 npm run build
 ```
 
-For ODPT-backed local data, create `.env.local` with `ODPT_API_KEY`.
+Configure `ODPT_API_KEY` in `.env.local` for local development and in Vercel
+environment variables for deployment. The key is server-only and is never sent
+to the browser.
 
 ## Data Source Policy
 
 Current version:
 
-- uses locally imported ODPT TrainInformation data
+- uses ODPT TrainInformation through `/api/railway-snapshot`
 - does not crawl third-party websites
 - does not commit or republish raw third-party railway operation data
 - does not copy official railway map visual designs
@@ -177,9 +189,20 @@ Future real-data versions should use legal and documented data sources, such as:
 
 See `docs/DATA_SOURCES.md` for the recommended ODPT/GTFS data-source strategy.
 
-## Open Data Import Path
+## Open Data Integration
 
-The repository includes a non-scraping ODPT import script:
+Production data flow uses the server API route:
+
+```text
+GET /api/railway-snapshot
+```
+
+The route reads `ODPT_API_KEY` from server environment variables, calls
+`odpt:TrainInformation`, and returns a normalized `RailwaySnapshot` to the
+browser. Responses use a short server cache to avoid unnecessary ODPT calls.
+
+The repository also keeps a non-scraping ODPT import script for local
+inspection and mapper development:
 
 ```bash
 ODPT_API_KEY=your_key npm run import:odpt
@@ -207,8 +230,6 @@ Opt-in resources:
 
 - `odpt:StationTimetable`
 - `odpt:TrainTimetable`
-
-The page uses the imported TrainInformation cache through `odpt-import-provider`.
 
 After importing, validate local JSON readiness with:
 

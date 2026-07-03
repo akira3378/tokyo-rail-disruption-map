@@ -1,7 +1,7 @@
 import {
   copies,
   localeLabels,
-  scenarioCopies,
+  snapshotCopies,
   statusCopies,
   themeLabels,
   type Locale,
@@ -11,38 +11,7 @@ import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from "@/lib/map/constants";
 import { clampZoom } from "@/lib/map/bounds";
 import { formatDateTime } from "@/lib/map/format";
 import type { DetailModel } from "@/lib/map/detail-model";
-import type { DemoScenario, LineViewModel, RailStatus } from "@/lib/types";
-
-export function ScenarioSwitcher({
-  label,
-  locale,
-  scenarioId,
-  scenarios,
-  onChange,
-}: {
-  label: string;
-  locale?: Locale;
-  scenarioId: string;
-  scenarios: DemoScenario[];
-  onChange: (scenarioId: string) => void;
-}) {
-  return (
-    <label className="flex w-full flex-col gap-1 text-xs font-semibold text-[var(--muted)] md:w-72">
-      {label}
-      <select
-        value={scenarioId}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 text-sm font-medium text-[var(--foreground)] outline-none ring-[var(--accent)] transition focus:ring-2"
-      >
-        {scenarios.map((scenario) => (
-          <option key={scenario.id} value={scenario.id}>
-            {getScenarioText(scenario, locale ?? "zh").name}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
+import type { OperationSnapshot, LineViewModel, RailStatus } from "@/lib/types";
 
 export function ZoomControls({
   copy,
@@ -105,18 +74,18 @@ export function ZoomControls({
 
 export function DetailPanel({
   detail,
-  scenario,
+  operation,
   copy,
   locale,
   statusText,
 }: {
   detail?: DetailModel;
-  scenario: DemoScenario;
+  operation: OperationSnapshot;
   copy: (typeof copies)[Locale];
   locale: Locale;
   statusText: Record<RailStatus, { label: string; description: string }>;
 }) {
-  const scenarioText = getScenarioText(scenario, locale);
+  const operationText = getOperationText(operation, locale);
 
   return (
     <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
@@ -138,7 +107,7 @@ export function DetailPanel({
       </div>
 
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-        {detail?.subtitle ?? scenarioText.description}
+        {detail?.subtitle ?? operationText.description}
       </p>
 
       <div className="mt-4 grid gap-3 text-sm">
@@ -154,7 +123,10 @@ export function DetailPanel({
           label={copy.detail.updatedAt}
           value={formatDateTime(detail?.incident?.updatedAt, copy)}
         />
-        <DetailRow label={copy.detail.data} value={copy.detail.dataPolicy} />
+        <DetailRow
+          label={copy.detail.data}
+          value={formatIncidentSource(detail?.incident) ?? copy.detail.dataPolicy}
+        />
       </div>
     </section>
   );
@@ -335,6 +307,22 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function getScenarioText(scenario: DemoScenario, locale: Locale) {
-  return scenarioCopies[locale][scenario.id] ?? scenario;
+function formatIncidentSource(incident?: DetailModel["incident"]) {
+  if (!incident?.source) {
+    return undefined;
+  }
+
+  const { raw } = incident.source;
+
+  return [
+    incident.source.resourceType,
+    raw["owl:sameAs"],
+    raw["dct:valid"] ? `dct:valid: ${raw["dct:valid"]}` : null,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function getOperationText(operation: OperationSnapshot, locale: Locale) {
+  return snapshotCopies[locale][operation.id] ?? operation;
 }

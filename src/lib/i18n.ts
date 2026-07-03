@@ -29,7 +29,7 @@ export const copies = {
     eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "基于 ODPT TrainInformation 的首都圈运行异常可视化。当前版本使用服务端本地缓存，不爬取铁路公司、Yahoo 或 NAVITIME 等网页。",
+      "基于 ODPT TrainInformation 的首都圈运行异常可视化。当前版本通过服务端 API 获取数据，不爬取铁路公司、Yahoo 或 NAVITIME 等网页。",
     controls: {
       language: "语言",
       theme: "显示",
@@ -60,7 +60,7 @@ export const copies = {
       emptyReason: "当前没有可显示的异常信息。",
       emptyUpdatedAt: "无异常信息",
       dataPolicy:
-        "ODPT TrainInformation 本地缓存；原始数据不提交到仓库，不从前端浏览器直连 ODPT。",
+        "ODPT TrainInformation 服务端 API；前端不直接持有或调用 ODPT key。",
       noLineIncident: "全线暂无异常信息",
     },
     legend: "状态图例",
@@ -72,7 +72,7 @@ export const copies = {
     eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "ODPT TrainInformation に基づく首都圏鉄道の運行異常可視化です。現在はサーバー側のローカルキャッシュを利用し、鉄道会社・Yahoo・NAVITIME 等のサイトはスクレイピングしません。",
+      "ODPT TrainInformation に基づく首都圏鉄道の運行異常可視化です。現在はサーバー API 経由で取得し、鉄道会社・Yahoo・NAVITIME 等のサイトはスクレイピングしません。",
     controls: {
       language: "言語",
       theme: "表示",
@@ -84,7 +84,7 @@ export const copies = {
     },
     map: {
       title: "簡略路線ビュー",
-      description: "デモ用の独自模式座標です。公式路線図は複製していません。",
+      description: "独自模式座標です。公式路線図は複製していません。",
       ariaLabel: "東京圏鉄道異常の簡略路線図",
       scenario: "データスナップショット",
       zoomIn: "拡大",
@@ -103,7 +103,7 @@ export const copies = {
       emptyReason: "現在表示できる異常情報はありません。",
       emptyUpdatedAt: "異常情報なし",
       dataPolicy:
-        "ODPT TrainInformation のローカルキャッシュです。原データはリポジトリに含めず、ブラウザから ODPT へ直接アクセスしません。",
+        "ODPT TrainInformation のサーバー API です。ブラウザは ODPT key を保持せず、直接 ODPT にアクセスしません。",
       noLineIncident: "全線に異常情報なし",
     },
     legend: "ステータス凡例",
@@ -115,7 +115,7 @@ export const copies = {
     eyebrow: "ODPT TrainInformation",
     title: "Tokyo Rail Disruption Map",
     subtitle:
-      "A Tokyo-area disruption view backed by ODPT TrainInformation. This version reads a server-side local cache and does not scrape railway-company, Yahoo, or NAVITIME pages.",
+      "A Tokyo-area disruption view backed by ODPT TrainInformation through a server API. It does not scrape railway-company, Yahoo, or NAVITIME pages.",
     controls: {
       language: "Language",
       theme: "Theme",
@@ -147,7 +147,7 @@ export const copies = {
       emptyReason: "There is no disruption detail to show right now.",
       emptyUpdatedAt: "No disruption information",
       dataPolicy:
-        "ODPT TrainInformation local cache. Raw provider data is not committed, and browsers do not call ODPT directly.",
+        "ODPT TrainInformation server API. The browser never stores the ODPT key or calls ODPT directly.",
       noLineIncident: "No line-wide disruption",
     },
     legend: "Status Legend",
@@ -156,38 +156,39 @@ export const copies = {
   },
 } as const;
 
-export const scenarioCopies: Record<
+export const snapshotCopies: Record<
   Locale,
   Record<string, { name: string; description: string }>
 > = {
   zh: {
-    "odpt-current-snapshot": {
-      name: "ODPT 当前快照",
-      description: "使用最近一次导入的 ODPT TrainInformation 数据。",
+    "odpt-live-snapshot": {
+      name: "ODPT 实时快照",
+      description: "通过服务端 API 获取的 ODPT TrainInformation 数据，短缓存后自动刷新。",
     },
-    "odpt-offline-snapshot": {
-      name: "等待 ODPT 数据",
-      description: "本地还没有 ODPT 缓存。请先运行数据导入命令。",
+    "odpt-loading-snapshot": {
+      name: "正在读取 ODPT",
+      description: "正在从服务端 API 获取最新 ODPT TrainInformation。",
     },
   },
   ja: {
-    "odpt-current-snapshot": {
-      name: "ODPT 現在スナップショット",
-      description: "直近に取り込んだ ODPT TrainInformation データを表示します。",
+    "odpt-live-snapshot": {
+      name: "ODPT ライブスナップショット",
+      description: "サーバー API 経由で取得した ODPT TrainInformation を短期キャッシュして表示します。",
     },
-    "odpt-offline-snapshot": {
-      name: "ODPT データ待ち",
-      description: "ローカル ODPT キャッシュがまだありません。先にデータ取込を実行してください。",
+    "odpt-loading-snapshot": {
+      name: "ODPT 読み込み中",
+      description: "サーバー API から最新の ODPT TrainInformation を取得しています。",
     },
   },
   en: {
-    "odpt-current-snapshot": {
-      name: "ODPT Current Snapshot",
-      description: "Uses the latest locally imported ODPT TrainInformation data.",
+    "odpt-live-snapshot": {
+      name: "ODPT Live Snapshot",
+      description:
+        "Uses ODPT TrainInformation fetched by the server API with a short refresh cache.",
     },
-    "odpt-offline-snapshot": {
-      name: "Waiting for ODPT Data",
-      description: "No local ODPT cache is available yet. Run the import command first.",
+    "odpt-loading-snapshot": {
+      name: "Loading ODPT",
+      description: "Loading the latest ODPT TrainInformation through the server API.",
     },
   },
 };

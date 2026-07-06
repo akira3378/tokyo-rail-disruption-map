@@ -8,7 +8,9 @@ import type { RailStatus } from "@/lib/types";
  * app-local string.
  */
 export function getLineIdFromOdptRailway(odptRailway: string) {
-  return odptRailway.replace(/^odpt\.Railway:/, "").replace(/[^a-zA-Z0-9]+/g, "-");
+  return odptRailway
+    .replace(/^odpt\.Railway:/, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-");
 }
 
 export const railwayColorOverrides: Record<string, string> = {

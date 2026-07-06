@@ -9,6 +9,7 @@ import {
 import { formatDateTime, formatTime } from "@/lib/map/format";
 import type { DetailModel } from "@/lib/map/detail-model";
 import type { LineViewModel, RailStatus } from "@/lib/types";
+import { panelFrameClassName } from "./styles";
 
 const statusOrder: Record<RailStatus, number> = {
   suspended: 0,
@@ -28,13 +29,13 @@ export function DetailPanel({
   statusText: Record<RailStatus, { label: string; description: string }>;
 }) {
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
+    <section className={`${panelFrameClassName} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+          <p className="text-accent text-xs font-semibold tracking-[0.14em] uppercase">
             {copy.detail.title}
           </p>
-          <h2 className="mt-1 text-xl font-semibold text-[var(--foreground)]">
+          <h2 className="text-copy mt-1 text-xl font-semibold">
             {detail.title}
           </h2>
         </div>
@@ -44,9 +45,7 @@ export function DetailPanel({
         />
       </div>
 
-      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-        {detail.subtitle}
-      </p>
+      <p className="text-muted mt-2 text-sm leading-6">{detail.subtitle}</p>
 
       <div className="mt-4 grid gap-3 text-sm">
         <DetailRow
@@ -61,7 +60,10 @@ export function DetailPanel({
           label={copy.detail.updatedAt}
           value={formatDateTime(detail.incident?.updatedAt, copy)}
         />
-        <DetailRow label={copy.detail.data} value={formatIncidentSource(detail, copy)} />
+        <DetailRow
+          label={copy.detail.data}
+          value={formatIncidentSource(detail, copy)}
+        />
       </div>
     </section>
   );
@@ -87,22 +89,21 @@ export function LineStatusList({
     .sort(
       (a, b) =>
         statusOrder[a.status] - statusOrder[b.status] ||
-        a.operator.localeCompare(b.operator) || a.name.localeCompare(b.name),
+        a.operator.localeCompare(b.operator) ||
+        a.name.localeCompare(b.name),
     );
 
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 shadow-sm">
+    <section className={`${panelFrameClassName} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">
-            {title}
-          </h2>
+          <h2 className="text-copy text-sm font-semibold">{title}</h2>
           <CoverageNote copy={copy} />
         </div>
         <CountBadge count={abnormalLines.length} copy={copy} />
       </div>
       {abnormalLines.length === 0 ? (
-        <p className="mt-3 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-3 text-sm font-medium text-[var(--muted)]">
+        <p className="border-line bg-panel-strong text-muted mt-3 rounded-md border px-3 py-3 text-sm font-medium">
           {copy.sidePanel.noAbnormal}
         </p>
       ) : (
@@ -112,14 +113,14 @@ export function LineStatusList({
               key={line.id}
               type="button"
               onClick={() => onSelectLine(line.id)}
-              className="grid gap-2 rounded-md border border-[var(--border)] bg-[var(--panel-strong)] px-3 py-2.5 text-left transition hover:border-[var(--accent)] hover:bg-[var(--panel)]"
+              className="border-line bg-panel-strong hover:border-accent hover:bg-panel grid gap-2 rounded-md border px-3 py-2.5 text-left transition"
             >
               <span className="flex min-w-0 items-start justify-between gap-3">
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
+                  <span className="text-copy block truncate text-sm font-semibold">
                     {line.name}
                   </span>
-                  <span className="block truncate text-xs text-[var(--muted)]">
+                  <span className="text-muted block truncate text-xs">
                     {line.operator}
                   </span>
                 </span>
@@ -136,10 +137,10 @@ export function LineStatusList({
                 </span>
               </span>
               <span className="grid gap-1">
-                <span className="line-clamp-2 text-xs leading-5 text-[var(--foreground)]">
+                <span className="text-copy line-clamp-2 text-xs leading-5">
                   {line.incident?.reason ?? statusText[line.status].description}
                 </span>
-                <span className="flex items-center justify-between gap-3 text-xs text-[var(--muted)]">
+                <span className="text-muted flex items-center justify-between gap-3 text-xs">
                   <span>
                     {formatTime(line.incident?.updatedAt, locale, copy.noTime)}
                   </span>
@@ -173,7 +174,7 @@ export function Toolbar({
     <div className="flex flex-wrap items-center justify-end gap-2 text-xs">
       <div
         aria-label={copy.controls.language}
-        className="grid grid-cols-3 gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] p-1"
+        className="border-line bg-panel grid grid-cols-3 gap-1 rounded-md border p-1"
         role="group"
       >
         {(["zh", "ja", "en"] as const).map((item) => (
@@ -183,8 +184,8 @@ export function Toolbar({
             onClick={() => onLocaleChange(item)}
             className={`h-8 w-11 rounded text-center font-semibold transition ${
               locale === item
-                ? "bg-[var(--accent)] text-white"
-                : "text-[var(--muted)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
+                ? "bg-accent text-white"
+                : "text-muted hover:bg-panel-strong hover:text-copy"
             }`}
           >
             {localeLabels[item]}
@@ -193,7 +194,7 @@ export function Toolbar({
       </div>
       <button
         aria-label={`${copy.controls.theme}: ${themeLabels[theme][locale]}`}
-        className="grid h-10 w-10 place-items-center rounded-md border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--panel-strong)] hover:text-[var(--foreground)]"
+        className="border-line bg-panel text-muted hover:border-accent hover:bg-panel-strong hover:text-copy grid h-10 w-10 place-items-center rounded-md border transition"
         title={themeLabels[theme][locale]}
         type="button"
         onClick={() => onThemeChange(nextTheme)}
@@ -223,10 +224,7 @@ function ThemeIcon({ theme }: { theme: ThemeMode }) {
   }
 
   return (
-    <span
-      aria-hidden="true"
-      className="text-2xl font-bold leading-none"
-    >
+    <span aria-hidden="true" className="text-2xl leading-none font-bold">
       ☾
     </span>
   );
@@ -240,7 +238,7 @@ function CountBadge({
   copy: (typeof copies)[Locale];
 }) {
   return (
-    <span className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--border)] bg-[var(--panel-strong)] px-3 text-xs font-semibold text-[var(--muted)]">
+    <span className="border-line bg-panel-strong text-muted inline-flex h-9 shrink-0 items-center rounded-full border px-3 text-xs font-semibold whitespace-nowrap">
       <span>{count}</span>
       {copy.sidePanel.countUnit ? (
         <span className="ml-1.5">{copy.sidePanel.countUnit}</span>
@@ -251,16 +249,20 @@ function CountBadge({
 
 export function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2">
-      <div className="text-xs font-medium text-[var(--muted)]">{label}</div>
-      <div className="mt-0.5 text-base font-semibold text-[var(--foreground)]">
-        {value}
-      </div>
+    <div className="border-line bg-panel rounded-md border px-3 py-2">
+      <div className="text-muted text-xs font-medium">{label}</div>
+      <div className="text-copy mt-0.5 text-base font-semibold">{value}</div>
     </div>
   );
 }
 
-function StatusBadge({ status, label }: { status: RailStatus; label?: string }) {
+function StatusBadge({
+  status,
+  label,
+}: {
+  status: RailStatus;
+  label?: string;
+}) {
   return (
     <span className={`status-badge status-badge-${status}`}>
       {label ?? statusCopies.zh[status].label}
@@ -271,10 +273,10 @@ function StatusBadge({ status, label }: { status: RailStatus; label?: string }) 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+      <dt className="text-muted text-xs font-semibold tracking-[0.12em] uppercase">
         {label}
       </dt>
-      <dd className="mt-1 leading-6 text-[var(--foreground)]">{value}</dd>
+      <dd className="text-copy mt-1 leading-6">{value}</dd>
     </div>
   );
 }
@@ -294,21 +296,20 @@ function formatIncidentSource(
     incident.source.provider === "yahoo"
       ? copy.sidePanel.supplementalSourceName
       : copy.sidePanel.sourceName;
-  const validUntil = "dct:valid" in raw && raw["dct:valid"]
-    ? `${copy.sidePanel.validUntil} ${formatDateTime(raw["dct:valid"], copy)}`
-    : null;
+  const validUntil =
+    "dct:valid" in raw && raw["dct:valid"]
+      ? `${copy.sidePanel.validUntil} ${formatDateTime(raw["dct:valid"], copy)}`
+      : null;
 
-  return [sourceName, validUntil]
-    .filter(Boolean)
-    .join(" / ");
+  return [sourceName, validUntil].filter(Boolean).join(" / ");
 }
 
 function CoverageNote({ copy }: { copy: (typeof copies)[Locale] }) {
   return (
-    <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+    <p className="text-muted mt-1 text-xs leading-5">
       {copy.sidePanel.sourceNote}{" "}
       <a
-        className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+        className="text-accent font-semibold underline-offset-2 hover:underline"
         href="https://www.odpt.org/"
         rel="noreferrer"
         target="_blank"
@@ -317,7 +318,7 @@ function CoverageNote({ copy }: { copy: (typeof copies)[Locale] }) {
       </a>{" "}
       /{" "}
       <a
-        className="font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+        className="text-accent font-semibold underline-offset-2 hover:underline"
         href="https://ckan.odpt.org/dataset"
         rel="noreferrer"
         target="_blank"

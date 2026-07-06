@@ -1,49 +1,52 @@
 @import "tailwindcss";
 
+@theme {
+  --color-page: #f6f7f4;
+  --color-copy: #1b1d1f;
+  --color-muted: #667078;
+  --color-panel: #ffffff;
+  --color-panel-strong: #eef2f3;
+  --color-line: #d7dde0;
+  --color-accent: #0b6e69;
+  --color-accent-strong: #094f4b;
+  --color-map: #fbfbf7;
+  --color-map-grid: #dfe5e4;
+  --color-map-label: #1f2937;
+  --color-station-fill: #ffffff;
+  --color-station-stroke: #1f2937;
+  --color-status-normal: #8e969c;
+  --color-status-delay: #d88a00;
+  --color-status-suspended: #d33d3d;
+  --color-status-reduced: #7b55d9;
+  --color-status-unknown: #4d5561;
+  --color-focus: #111827;
+}
+
 :root {
   color-scheme: light;
-  --background: #f6f7f4;
-  --foreground: #1b1d1f;
-  --muted: #667078;
-  --panel: #ffffff;
-  --panel-strong: #eef2f3;
-  --border: #d7dde0;
-  --accent: #0b6e69;
-  --accent-strong: #094f4b;
-  --map-bg: #fbfbf7;
-  --map-grid: #dfe5e4;
-  --map-label: #1f2937;
-  --station-fill: #ffffff;
-  --station-stroke: #1f2937;
-  --normal: #8e969c;
-  --delay: #d88a00;
-  --suspended: #d33d3d;
-  --reduced: #7b55d9;
-  --unknown: #4d5561;
-  --focus: #111827;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #111412;
-  --foreground: #eef4ef;
-  --muted: #9aa8a1;
-  --panel: #171d1b;
-  --panel-strong: #202925;
-  --border: #334039;
-  --accent: #3fc4b6;
-  --accent-strong: #8fe4db;
-  --map-bg: #111815;
-  --map-grid: #26342f;
-  --map-label: #dce8e2;
-  --station-fill: #17201c;
-  --station-stroke: #dce8e2;
-  --normal: #a3adb5;
-  --delay: #f1a51c;
-  --suspended: #ff6b6b;
-  --reduced: #a78bfa;
-  --unknown: #c6cdd4;
-  --focus: #eef4ef;
+  --color-page: #111412;
+  --color-copy: #eef4ef;
+  --color-muted: #9aa8a1;
+  --color-panel: #171d1b;
+  --color-panel-strong: #202925;
+  --color-line: #334039;
+  --color-accent: #3fc4b6;
+  --color-accent-strong: #8fe4db;
+  --color-map: #111815;
+  --color-map-grid: #26342f;
+  --color-map-label: #dce8e2;
+  --color-station-fill: #17201c;
+  --color-station-stroke: #dce8e2;
+  --color-status-normal: #a3adb5;
+  --color-status-delay: #f1a51c;
+  --color-status-suspended: #ff6b6b;
+  --color-status-reduced: #a78bfa;
+  --color-status-unknown: #c6cdd4;
+  --color-focus: #eef4ef;
 }
 
 * {
@@ -57,10 +60,15 @@ body {
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-page);
+  color: var(--color-copy);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
 }
 
@@ -81,31 +89,47 @@ button {
 }
 
 .status-badge-normal {
-  border-color: color-mix(in srgb, var(--normal), transparent 60%);
-  background: color-mix(in srgb, var(--normal), transparent 88%);
-  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--color-status-normal), transparent 60%);
+  background: color-mix(in srgb, var(--color-status-normal), transparent 88%);
+  color: var(--color-copy);
 }
 
 .status-badge-delayed {
-  border-color: color-mix(in srgb, var(--delay), transparent 45%);
-  background: color-mix(in srgb, var(--delay), transparent 84%);
-  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--color-status-delay), transparent 45%);
+  background: color-mix(in srgb, var(--color-status-delay), transparent 84%);
+  color: var(--color-copy);
 }
 
 .status-badge-suspended {
-  border-color: color-mix(in srgb, var(--suspended), transparent 42%);
-  background: color-mix(in srgb, var(--suspended), transparent 84%);
-  color: var(--foreground);
+  border-color: color-mix(
+    in srgb,
+    var(--color-status-suspended),
+    transparent 42%
+  );
+  background: color-mix(
+    in srgb,
+    var(--color-status-suspended),
+    transparent 84%
+  );
+  color: var(--color-copy);
 }
 
 .status-badge-reduced {
-  border-color: color-mix(in srgb, var(--reduced), transparent 42%);
-  background: color-mix(in srgb, var(--reduced), transparent 84%);
-  color: var(--foreground);
+  border-color: color-mix(
+    in srgb,
+    var(--color-status-reduced),
+    transparent 42%
+  );
+  background: color-mix(in srgb, var(--color-status-reduced), transparent 84%);
+  color: var(--color-copy);
 }
 
 .status-badge-unknown {
-  border-color: color-mix(in srgb, var(--unknown), transparent 35%);
-  background: color-mix(in srgb, var(--unknown), transparent 80%);
-  color: var(--foreground);
+  border-color: color-mix(
+    in srgb,
+    var(--color-status-unknown),
+    transparent 35%
+  );
+  background: color-mix(in srgb, var(--color-status-unknown), transparent 80%);
+  color: var(--color-copy);
 }

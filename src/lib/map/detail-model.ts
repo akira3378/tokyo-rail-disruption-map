@@ -1,5 +1,10 @@
 import { copies, statusCopies, type Locale } from "@/lib/i18n";
-import type { Incident, RailwaySnapshot, RailStatus, Selection } from "@/lib/types";
+import type {
+  Incident,
+  RailwaySnapshot,
+  RailStatus,
+  Selection,
+} from "@/lib/types";
 
 export type DetailModel = {
   title: string;

@@ -12,6 +12,7 @@ import {
   Toolbar,
 } from "./rail-map/panels";
 import { RailwayTileOverview } from "./rail-map/railway-tile-overview";
+import { panelFrameClassName } from "./rail-map/styles";
 
 const REFRESH_INTERVAL_MS = 60_000;
 
@@ -19,9 +20,7 @@ type RailDisruptionMapProps = {
   initialSnapshot: RailwaySnapshot;
 };
 
-export function RailDisruptionMap({
-  initialSnapshot,
-}: RailDisruptionMapProps) {
+export function RailDisruptionMap({ initialSnapshot }: RailDisruptionMapProps) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [locale, setLocale] = useState<Locale>("ja");
@@ -80,17 +79,17 @@ export function RailDisruptionMap({
 
   return (
     <div
-      className="min-h-screen bg-[var(--background)] text-[var(--foreground)]"
+      className="bg-page text-copy min-h-screen"
       data-theme={theme}
       lang={copy.htmlLang}
     >
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-4 md:flex-row md:items-end md:justify-between">
+        <header className="border-line flex flex-col gap-4 border-b pb-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+            <p className="text-accent text-xs font-semibold tracking-[0.18em] uppercase">
               {copy.eyebrow}
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[var(--foreground)] md:text-4xl">
+            <h1 className="text-copy mt-1 text-3xl font-semibold tracking-normal md:text-4xl">
               {copy.title}
             </h1>
           </div>
@@ -125,19 +124,21 @@ export function RailDisruptionMap({
         </header>
 
         <section className="grid items-start gap-4 py-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-[var(--border)] bg-[var(--panel-strong)] p-3 md:flex-row md:items-center md:justify-between">
+          <div
+            className={`${panelFrameClassName} flex flex-col overflow-hidden`}
+          >
+            <div className="border-line bg-panel-strong flex flex-col gap-3 border-b p-3 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
-                <h2 className="text-base font-semibold text-[var(--foreground)]">
+                <h2 className="text-copy text-base font-semibold">
                   {copy.map.title}
                 </h2>
-                <p className="mt-1 text-xs text-[var(--muted)]">
+                <p className="text-muted mt-1 text-xs">
                   {copy.map.description}
                 </p>
               </div>
             </div>
 
-            <div className="bg-[var(--map-bg)]">
+            <div className="bg-map">
               <RailwayTileOverview
                 copy={copy}
                 lineGeoIndex={snapshot.lineGeoIndex}

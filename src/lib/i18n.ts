@@ -28,7 +28,8 @@ export const copies = {
     htmlLang: "zh-CN",
     eyebrow: "ODPT TrainInformation",
     title: "东京铁路运行异常地图",
-    subtitle: "首都圈铁路运行异常可视化。当前版本通过服务端 API 获取实时运行信息。",
+    subtitle:
+      "首都圈铁路运行异常可视化。当前版本通过服务端 API 获取实时运行信息。",
     controls: {
       language: "语言",
       theme: "显示",
@@ -40,8 +41,7 @@ export const copies = {
     },
     map: {
       title: "运行状态总览",
-      description:
-        "显示免费铁路地图图层；选择异常线路后会定位到对应线路附近。",
+      description: "显示免费铁路地图图层；选择异常线路后会定位到对应线路附近。",
       ariaLabel: "东京铁路运行状态总览",
       scenario: "数据快照",
       zoomIn: "放大",
@@ -63,7 +63,8 @@ export const copies = {
       updatedAt: "更新时间",
       data: "来源",
       emptyAffectedArea: "点击下方异常线路后显示。",
-      emptyReason: "当前侧栏只展示 ODPT TrainInformation 能返回并映射到线路的异常。",
+      emptyReason:
+        "当前侧栏只展示 ODPT TrainInformation 能返回并映射到线路的异常。",
       emptyUpdatedAt: "以最新 ODPT 快照为准",
       dataPolicy: "ODPT TrainInformation / 服务端 API",
       noLineIncident: "全线暂无异常信息",
@@ -89,7 +90,8 @@ export const copies = {
     htmlLang: "ja",
     eyebrow: "ODPT TrainInformation",
     title: "東京鉄道運行異常マップ",
-    subtitle: "首都圏鉄道の運行異常を可視化します。現在はサーバー API 経由でリアルタイム運行情報を取得します。",
+    subtitle:
+      "首都圏鉄道の運行異常を可視化します。現在はサーバー API 経由でリアルタイム運行情報を取得します。",
     controls: {
       language: "言語",
       theme: "表示",
@@ -124,7 +126,8 @@ export const copies = {
       updatedAt: "更新時刻",
       data: "出典",
       emptyAffectedArea: "下の異常路線を選ぶと表示します。",
-      emptyReason: "このサイドパネルは ODPT TrainInformation で取得・路線化できる異常のみを表示します。",
+      emptyReason:
+        "このサイドパネルは ODPT TrainInformation で取得・路線化できる異常のみを表示します。",
       emptyUpdatedAt: "最新の ODPT スナップショットに基づきます",
       dataPolicy: "ODPT TrainInformation / サーバー API",
       noLineIncident: "全線に異常情報なし",
@@ -186,7 +189,8 @@ export const copies = {
       updatedAt: "Updated at",
       data: "Source",
       emptyAffectedArea: "Shown after selecting a disrupted line below.",
-      emptyReason: "This side panel shows only disruptions returned by ODPT TrainInformation and mapped to a line.",
+      emptyReason:
+        "This side panel shows only disruptions returned by ODPT TrainInformation and mapped to a line.",
       emptyUpdatedAt: "Based on the latest ODPT snapshot",
       dataPolicy: "ODPT TrainInformation / server API",
       noLineIncident: "No line-wide disruption",
@@ -217,7 +221,8 @@ export const snapshotCopies: Record<
   zh: {
     "odpt-live-snapshot": {
       name: "ODPT 实时快照",
-      description: "通过服务端 API 获取的 ODPT TrainInformation 数据，短缓存后自动刷新。",
+      description:
+        "通过服务端 API 获取的 ODPT TrainInformation 数据，短缓存后自动刷新。",
     },
     "odpt-loading-snapshot": {
       name: "正在读取 ODPT",
@@ -227,11 +232,13 @@ export const snapshotCopies: Record<
   ja: {
     "odpt-live-snapshot": {
       name: "ODPT ライブスナップショット",
-      description: "サーバー API 経由で取得した ODPT TrainInformation を短期キャッシュして表示します。",
+      description:
+        "サーバー API 経由で取得した ODPT TrainInformation を短期キャッシュして表示します。",
     },
     "odpt-loading-snapshot": {
       name: "ODPT 読み込み中",
-      description: "サーバー API から最新の ODPT TrainInformation を取得しています。",
+      description:
+        "サーバー API から最新の ODPT TrainInformation を取得しています。",
     },
   },
   en: {
@@ -242,7 +249,8 @@ export const snapshotCopies: Record<
     },
     "odpt-loading-snapshot": {
       name: "Loading ODPT",
-      description: "Loading the latest ODPT TrainInformation through the server API.",
+      description:
+        "Loading the latest ODPT TrainInformation through the server API.",
     },
   },
 };

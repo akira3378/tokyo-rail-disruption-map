@@ -61,14 +61,20 @@ function parseYahooTroubleRows(html: string): YahooTroubleRow[] {
     return [];
   }
 
-  return [...sectionMatch[1].matchAll(/<tr><td><a href="([^"]+)">([^<]+)<\/a><\/td><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><\/tr>/g)]
+  return [
+    ...sectionMatch[1].matchAll(
+      /<tr><td><a href="([^"]+)">([^<]+)<\/a><\/td><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><\/tr>/g,
+    ),
+  ]
     .map((match) => ({
       href: match[1],
       name: decodeHtml(match[2]),
       statusText: decodeHtml(stripTags(match[3])),
       detail: decodeHtml(stripTags(match[4])),
     }))
-    .filter((row) => row.name && row.statusText && row.statusText !== "平常運転");
+    .filter(
+      (row) => row.name && row.statusText && row.statusText !== "平常運転",
+    );
 }
 
 async function fetchYahooDetail(href: string) {
@@ -82,16 +88,22 @@ async function fetchYahooDetail(href: string) {
   }
 
   const html = await response.text();
-  const statusText = html.match(/<dt class="icnAlert[^"]*">([\s\S]*?)<\/dt>/)?.[1];
+  const statusText = html.match(
+    /<dt class="icnAlert[^"]*">([\s\S]*?)<\/dt>/,
+  )?.[1];
   const detailText = html.match(/<dd class="trouble">([\s\S]*?)<\/dd>/)?.[1];
 
   if (detailText) {
     return decodeHtml(stripTags(detailText));
   }
 
-  const fallback = html.match(/<h1>[^<]+<\/h1>[\s\S]*?<p class="mt10">([\s\S]*?)<\/p>/)?.[1];
+  const fallback = html.match(
+    /<h1>[^<]+<\/h1>[\s\S]*?<p class="mt10">([\s\S]*?)<\/p>/,
+  )?.[1];
 
-  return fallback ? decodeHtml(stripTags(fallback)) : decodeHtml(stripTags(statusText));
+  return fallback
+    ? decodeHtml(stripTags(fallback))
+    : decodeHtml(stripTags(statusText));
 }
 
 function mapYahooRowToIncident(
@@ -99,7 +111,9 @@ function mapYahooRowToIncident(
   updatedAt: string,
 ): Incident {
   const mappedLineId = yahooLineMappings[row.href];
-  const lineId = mappedLineId ?? `Yahoo-${row.href.replace(/[^0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+  const lineId =
+    mappedLineId ??
+    `Yahoo-${row.href.replace(/[^0-9]+/g, "-").replace(/^-|-$/g, "")}`;
   const status = inferYahooStatus(row.statusText);
   const raw: YahooTrainInformationRecord = {
     id: row.href,
@@ -151,7 +165,9 @@ function inferYahooStatus(statusText: string): Exclude<RailStatus, "normal"> {
 }
 
 function parseYahooUpdatedAt(html: string) {
-  const match = html.match(/(\d{1,2})月(\d{1,2})日\s+(\d{1,2})時(\d{1,2})分\s+更新/);
+  const match = html.match(
+    /(\d{1,2})月(\d{1,2})日\s+(\d{1,2})時(\d{1,2})分\s+更新/,
+  );
 
   if (!match) {
     return new Date().toISOString();
@@ -164,7 +180,12 @@ function parseYahooUpdatedAt(html: string) {
 }
 
 function stripTags(value: string | undefined) {
-  return value?.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim() ?? "";
+  return (
+    value
+      ?.replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim() ?? ""
+  );
 }
 
 function decodeHtml(value: string) {
@@ -172,6 +193,6 @@ function decodeHtml(value: string) {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
 }

@@ -73,7 +73,8 @@ export function buildRailwaySnapshot(
   const externalLines = operation.incidents
     .filter(
       (incident) =>
-        incident.scope.type === "line" && !knownLineIds.has(incident.scope.lineId),
+        incident.scope.type === "line" &&
+        !knownLineIds.has(incident.scope.lineId),
     )
     .map((incident): LineViewModel => {
       const line: RailLine = {

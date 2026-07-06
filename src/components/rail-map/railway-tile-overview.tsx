@@ -50,12 +50,7 @@ export function RailwayTileOverview({
     selectionKey && overviewSelectionKey !== selectionKey
       ? "selection"
       : "overview";
-  const baseZoom =
-    viewMode === "overview"
-      ? 10
-      : target
-        ? 12
-        : 11;
+  const baseZoom = viewMode === "overview" ? 10 : target ? 12 : 11;
   const zoom = clamp(baseZoom + zoomOffset, 10, 15);
   const center =
     viewMode === "overview" ? TOKYO_CENTER : (target ?? TOKYO_CENTER);
@@ -75,19 +70,12 @@ export function RailwayTileOverview({
           <MapTile key={`osm-${tile.z}-${tile.x}-${tile.y}`} tile={tile} />
         ))}
         {tiles.map((tile) => (
-          <RailwayTile
-            key={`rail-${tile.z}-${tile.x}-${tile.y}`}
-            tile={tile}
-          />
+          <RailwayTile key={`rail-${tile.z}-${tile.x}-${tile.y}`} tile={tile} />
         ))}
       </div>
 
       {target && viewMode === "selection" ? (
-        <LineMarker
-          centerWorld={centerWorld}
-          target={target}
-          zoom={zoom}
-        />
+        <LineMarker centerWorld={centerWorld} target={target} zoom={zoom} />
       ) : null}
 
       {showLineFallback ? (
@@ -176,10 +164,10 @@ function LineMarker({
         top: `calc(50% + ${(position.y - centerWorld.y) * TILE_SIZE}px)`,
       }}
     >
-      <div className="grid place-items-center rounded-full border-2 border-white bg-[var(--suspended)] px-2 py-1 text-xs font-bold text-white shadow-lg">
+      <div className="bg-status-suspended grid place-items-center rounded-full border-2 border-white px-2 py-1 text-xs font-bold text-white shadow-lg">
         !
       </div>
-      <div className="mt-1 whitespace-nowrap rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-2 py-1 text-xs font-semibold text-[var(--foreground)] shadow-sm">
+      <div className="border-line bg-panel/95 text-copy mt-1 rounded-md border px-2 py-1 text-xs font-semibold whitespace-nowrap shadow-sm">
         {target.name}
       </div>
     </div>
@@ -198,14 +186,14 @@ function LineFallbackMarker({
   }
 
   return (
-    <div className="absolute left-1/2 top-1/2 z-10 w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-4 py-3 text-center shadow-lg">
-      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+    <div className="border-line bg-panel/95 absolute top-1/2 left-1/2 z-10 w-[min(22rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border px-4 py-3 text-center shadow-lg">
+      <div className="text-accent text-xs font-semibold tracking-[0.12em] uppercase">
         {copy.map.lineFallbackLabel}
       </div>
-      <div className="mt-1 text-base font-semibold text-[var(--foreground)]">
+      <div className="text-copy mt-1 text-base font-semibold">
         {selectedDetail.title}
       </div>
-      <div className="mt-1 text-xs leading-5 text-[var(--muted)]">
+      <div className="text-muted mt-1 text-xs leading-5">
         {copy.map.lineFallbackDescription}
       </div>
     </div>
@@ -220,7 +208,7 @@ function MapSelectionNote({
   target: LineMapTarget | undefined;
 }) {
   return (
-    <div className="pointer-events-none absolute left-3 right-14 top-3 z-20 max-w-96 rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-3 py-2 text-xs leading-5 text-[var(--muted)] shadow-sm">
+    <div className="border-line bg-panel/95 text-muted pointer-events-none absolute top-3 right-14 left-3 z-20 max-w-96 rounded-md border px-3 py-2 text-xs leading-5 shadow-sm">
       {target
         ? formatLineNote(copy.map.selectedLine, target)
         : copy.map.noLineTarget}
@@ -244,10 +232,10 @@ function MapControls({
   onZoomOut: () => void;
 }) {
   const buttonClass =
-    "grid h-8 w-8 place-items-center border-b border-[var(--border)] text-sm font-bold text-[var(--foreground)] transition last:border-b-0 enabled:hover:bg-[var(--panel-strong)] disabled:cursor-not-allowed disabled:text-[var(--muted)]";
+    "border-line text-copy enabled:hover:bg-panel-strong disabled:text-muted grid h-8 w-8 place-items-center border-b text-sm font-bold transition last:border-b-0 disabled:cursor-not-allowed";
 
   return (
-    <div className="absolute right-3 top-3 z-20 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--panel)]/95 shadow-sm">
+    <div className="border-line bg-panel/95 absolute top-3 right-3 z-20 overflow-hidden rounded-md border shadow-sm">
       <button
         aria-label={copy.map.zoomIn}
         className={buttonClass}
@@ -301,7 +289,7 @@ function FitViewIcon() {
 
 function MapAttribution({ copy }: { copy: (typeof copies)[Locale] }) {
   return (
-    <div className="absolute bottom-2 right-2 z-20 rounded bg-white/90 px-2 py-1 text-[10px] leading-4 text-slate-700 shadow-sm">
+    <div className="absolute right-2 bottom-2 z-20 rounded bg-white/90 px-2 py-1 text-[10px] leading-4 text-slate-700 shadow-sm">
       {copy.map.freeLayerLabel}{" "}
       <a className="underline" href="https://www.openstreetmap.org/copyright">
         © OpenStreetMap
@@ -349,9 +337,7 @@ function lngLatToWorld(lng: number, lat: number, zoom: number) {
   return {
     x: ((lng + 180) / 360) * scale,
     y:
-      ((1 -
-        Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) /
-        2) *
+      ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) *
       scale,
   };
 }

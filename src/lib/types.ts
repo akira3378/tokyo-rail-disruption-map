@@ -5,11 +5,7 @@ import type {
 import type { YahooTrainInformationRecord } from "./sources/yahoo/train-information";
 
 export type RailStatus =
-  | "normal"
-  | "delayed"
-  | "suspended"
-  | "reduced"
-  | "unknown";
+  "normal" | "delayed" | "suspended" | "reduced" | "unknown";
 
 export type IncidentScope =
   | {
@@ -66,8 +62,12 @@ export type RailLine = {
   };
   source?: {
     provider: "odpt" | "yahoo";
-    resourceType: "odpt:Railway" | "odpt:TrainInformation" | "yahoo:TrainInformation";
-    raw: OdptRailwayRecord | OdptTrainInformationRecord | YahooTrainInformationRecord;
+    resourceType:
+      "odpt:Railway" | "odpt:TrainInformation" | "yahoo:TrainInformation";
+    raw:
+      | OdptRailwayRecord
+      | OdptTrainInformationRecord
+      | YahooTrainInformationRecord;
   };
 };
 

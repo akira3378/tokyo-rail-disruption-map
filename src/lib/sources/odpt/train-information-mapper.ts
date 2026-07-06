@@ -84,7 +84,9 @@ function mapOdptTrainInformationRecord(
   };
 }
 
-function inferTrainInformationStatus(record: OdptTrainInformationRecord): RailStatus {
+function inferTrainInformationStatus(
+  record: OdptTrainInformationRecord,
+): RailStatus {
   const fields = [
     record["odpt:trainInformationStatus"]?.ja,
     record["odpt:trainInformationStatus"]?.en,
@@ -100,7 +102,9 @@ function inferTrainInformationStatus(record: OdptTrainInformationRecord): RailSt
   }
 
   for (const rule of odptTrainInformationStatusRules) {
-    if (rule.patterns.some((pattern) => fields.includes(pattern.toLowerCase()))) {
+    if (
+      rule.patterns.some((pattern) => fields.includes(pattern.toLowerCase()))
+    ) {
       return rule.status;
     }
   }

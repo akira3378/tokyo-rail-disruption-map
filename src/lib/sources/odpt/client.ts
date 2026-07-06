@@ -1,7 +1,4 @@
-import type {
-  OdptRailwayRecord,
-  OdptTrainInformationRecord,
-} from "./types";
+import type { OdptRailwayRecord, OdptTrainInformationRecord } from "./types";
 
 export const ODPT_API_BASE = "https://api.odpt.org/api/v4";
 export const ODPT_REVALIDATE_SECONDS = 60;

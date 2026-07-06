@@ -30,6 +30,19 @@ The live implementation uses `src/app/api/railway-snapshot/route.ts` and
 server route and does not keep a local raw-data import workflow in the
 repository.
 
+## Map Layer Boundary
+
+The free OpenStreetMap/OpenRailwayMap map shown in the overview is rendered from
+raster PNG tiles. Those tiles can display railway infrastructure, but they
+cannot be queried by station name or railway line name from the browser.
+
+When a disrupted line is selected, the app therefore does not query the tile
+image itself. It uses the ODPT railway id and line names from the live
+TrainInformation snapshot, then performs a small, on-demand OpenStreetMap
+Overpass lookup for matching railway route relations. The result is cached
+server-side and exposed as `RailwaySnapshot.lineGeoIndex`, so the map can move
+near the affected line even when a specific station is not available.
+
 ## ODPT Integration Boundary
 
 The app keeps source-specific data outside React components:

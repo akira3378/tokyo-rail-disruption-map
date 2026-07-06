@@ -41,19 +41,19 @@ export const copies = {
     map: {
       title: "运行状态总览",
       description:
-        "显示免费铁路地图图层；选择异常线路后会定位详情里提到的车站。",
+        "显示免费铁路地图图层；选择异常线路后会定位到对应线路附近。",
       ariaLabel: "东京铁路运行状态总览",
       scenario: "数据快照",
       zoomIn: "放大",
       zoomOut: "缩小",
       resetZoom: "重置视图",
       zoomLevel: "缩放",
-      selectedStations: "已定位：{stations}",
-      noStationTarget: "选择异常线路后，会尝试从详情中匹配车站并在地图上标出。",
+      selectedLine: "已定位：{line}",
+      noLineTarget: "选择异常线路后，会尝试根据线路名称定位到地图附近。",
       freeLayerLabel: "免费瓦片",
       lineFallbackLabel: "线路级信息",
       lineFallbackDescription:
-        "当前详情没有可定位的具体车站，因此只显示线路异常提示。",
+        "当前线路暂时无法取得地图坐标，因此只显示线路异常提示。",
     },
     detail: {
       title: "详情",
@@ -102,19 +102,19 @@ export const copies = {
     map: {
       title: "運行ステータス一覧",
       description:
-        "無料の鉄道マップレイヤーを表示し、異常路線を選ぶと詳細内の駅名を地図上に示します。",
+        "無料の鉄道マップレイヤーを表示し、異常路線を選ぶと該当路線の付近に移動します。",
       ariaLabel: "東京圏鉄道運行ステータス一覧",
       scenario: "データスナップショット",
       zoomIn: "拡大",
       zoomOut: "縮小",
       resetZoom: "表示範囲を戻す",
       zoomLevel: "ズーム",
-      selectedStations: "表示中の駅：{stations}",
-      noStationTarget: "異常路線を選ぶと、詳細文から駅名を抽出して地図上に表示します。",
+      selectedLine: "表示中の路線：{line}",
+      noLineTarget: "異常路線を選ぶと、路線名から地図上の付近に移動します。",
       freeLayerLabel: "無料タイル",
       lineFallbackLabel: "路線単位の情報",
       lineFallbackDescription:
-        "現在の詳細には地図上に特定できる駅名がないため、路線の異常のみを表示しています。",
+        "現在の路線について地図座標を取得できないため、路線の異常のみを表示しています。",
     },
     detail: {
       title: "詳細",
@@ -164,19 +164,19 @@ export const copies = {
     map: {
       title: "Operation Status Overview",
       description:
-        "Shows a free railway map layer and marks stations mentioned by the selected disruption.",
+        "Shows a free railway map layer and moves near the selected disrupted line.",
       ariaLabel: "Tokyo rail operation status overview",
       scenario: "Data snapshot",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
       resetZoom: "Reset view",
       zoomLevel: "Zoom",
-      selectedStations: "Located: {stations}",
-      noStationTarget: "Select a disrupted line to mark stations found in the detail text.",
+      selectedLine: "Located line: {line}",
+      noLineTarget: "Select a disrupted line to locate the map by line name.",
       freeLayerLabel: "Free tiles",
       lineFallbackLabel: "Line-level notice",
       lineFallbackDescription:
-        "This detail does not include a locatable station name, so only the line notice is shown.",
+        "Line coordinates could not be loaded for this detail, so only the line notice is shown.",
     },
     detail: {
       title: "Detail",

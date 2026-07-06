@@ -6,10 +6,7 @@
 import { useState } from "react";
 import type { copies, Locale } from "@/lib/i18n";
 import type { DetailModel } from "@/lib/map/detail-model";
-import {
-  extractStationTargets,
-  type StationMapTarget,
-} from "@/lib/map/station-locator";
+import type { LineGeoIndex } from "@/lib/types";
 
 const TILE_SIZE = 256;
 const TILE_RADIUS = 3;
@@ -20,6 +17,7 @@ const TOKYO_CENTER = { lat: 35.6812, lng: 139.7671 };
 type RailwayTileOverviewProps = {
   copy: (typeof copies)[Locale];
   selectedDetail: DetailModel | null | undefined;
+  lineGeoIndex: LineGeoIndex;
 };
 
 type Tile = {
@@ -34,6 +32,7 @@ type ViewMode = "selection" | "overview";
 
 export function RailwayTileOverview({
   copy,
+  lineGeoIndex,
   selectedDetail,
 }: RailwayTileOverviewProps) {
   const [zoomState, setZoomState] = useState<{
@@ -43,7 +42,7 @@ export function RailwayTileOverview({
   const [overviewSelectionKey, setOverviewSelectionKey] = useState<
     string | null
   >(null);
-  const targets = extractStationTargets(selectedDetail);
+  const target = getSelectedLineTarget(selectedDetail, lineGeoIndex);
   const selectionKey = selectedDetail?.incident?.id ?? null;
   const zoomOffset =
     zoomState.selectionKey === selectionKey ? zoomState.offset : 0;
@@ -54,17 +53,16 @@ export function RailwayTileOverview({
   const baseZoom =
     viewMode === "overview"
       ? 10
-      : targets.length === 1
-        ? 14
-        : targets.length > 1
-          ? 12
-          : 11;
+      : target
+        ? 12
+        : 11;
   const zoom = clamp(baseZoom + zoomOffset, 10, 15);
-  const center = viewMode === "overview" ? TOKYO_CENTER : getMapCenter(targets);
+  const center =
+    viewMode === "overview" ? TOKYO_CENTER : (target ?? TOKYO_CENTER);
   const centerWorld = lngLatToWorld(center.lng, center.lat, zoom);
   const tiles = getVisibleTiles(centerWorld, zoom);
   const showLineFallback = Boolean(
-    selectedDetail?.incident && targets.length === 0 && viewMode === "selection",
+    selectedDetail?.incident && !target && viewMode === "selection",
   );
 
   return (
@@ -84,21 +82,19 @@ export function RailwayTileOverview({
         ))}
       </div>
 
-      {targets.map((target, index) => (
-        <StationMarker
-          key={target.name}
+      {target && viewMode === "selection" ? (
+        <LineMarker
           centerWorld={centerWorld}
-          index={index}
           target={target}
           zoom={zoom}
         />
-      ))}
+      ) : null}
 
       {showLineFallback ? (
         <LineFallbackMarker copy={copy} selectedDetail={selectedDetail} />
       ) : null}
 
-      <MapSelectionNote copy={copy} targets={targets} />
+      <MapSelectionNote copy={copy} target={target} />
       <MapControls
         canZoomIn={zoomOffset < MAX_ZOOM_OFFSET}
         canZoomOut={zoomOffset > MIN_ZOOM_OFFSET}
@@ -155,15 +151,19 @@ function RailwayTile({ tile }: { tile: Tile }) {
   );
 }
 
-function StationMarker({
+type LineMapTarget = {
+  name: string;
+  lat: number;
+  lng: number;
+};
+
+function LineMarker({
   centerWorld,
-  index,
   target,
   zoom,
 }: {
   centerWorld: { x: number; y: number };
-  index: number;
-  target: StationMapTarget;
+  target: LineMapTarget;
   zoom: number;
 }) {
   const position = lngLatToWorld(target.lng, target.lat, zoom);
@@ -177,7 +177,7 @@ function StationMarker({
       }}
     >
       <div className="grid place-items-center rounded-full border-2 border-white bg-[var(--suspended)] px-2 py-1 text-xs font-bold text-white shadow-lg">
-        {index + 1}
+        !
       </div>
       <div className="mt-1 whitespace-nowrap rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-2 py-1 text-xs font-semibold text-[var(--foreground)] shadow-sm">
         {target.name}
@@ -214,16 +214,16 @@ function LineFallbackMarker({
 
 function MapSelectionNote({
   copy,
-  targets,
+  target,
 }: {
   copy: (typeof copies)[Locale];
-  targets: StationMapTarget[];
+  target: LineMapTarget | undefined;
 }) {
   return (
     <div className="pointer-events-none absolute left-3 right-14 top-3 z-20 max-w-96 rounded-md border border-[var(--border)] bg-[var(--panel)]/95 px-3 py-2 text-xs leading-5 text-[var(--muted)] shadow-sm">
-      {targets.length > 0
-        ? formatStationNote(copy.map.selectedStations, targets)
-        : copy.map.noStationTarget}
+      {target
+        ? formatLineNote(copy.map.selectedLine, target)
+        : copy.map.noLineTarget}
     </div>
   );
 }
@@ -314,25 +314,6 @@ function MapAttribution({ copy }: { copy: (typeof copies)[Locale] }) {
   );
 }
 
-function getMapCenter(targets: StationMapTarget[]) {
-  if (targets.length === 0) {
-    return TOKYO_CENTER;
-  }
-
-  const totals = targets.reduce(
-    (current, target) => ({
-      lat: current.lat + target.lat,
-      lng: current.lng + target.lng,
-    }),
-    { lat: 0, lng: 0 },
-  );
-
-  return {
-    lat: totals.lat / targets.length,
-    lng: totals.lng / targets.length,
-  };
-}
-
 function getVisibleTiles(centerWorld: { x: number; y: number }, zoom: number) {
   const centerTileX = Math.floor(centerWorld.x);
   const centerTileY = Math.floor(centerWorld.y);
@@ -383,9 +364,32 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function formatStationNote(template: string, targets: StationMapTarget[]) {
-  return template.replace(
-    "{stations}",
-    targets.map((target) => target.name).join(" / "),
-  );
+function getSelectedLineTarget(
+  detail: DetailModel | null | undefined,
+  lineGeoIndex: LineGeoIndex,
+) {
+  const lineId =
+    detail?.incident?.scope.type === "line"
+      ? detail.incident.scope.lineId
+      : undefined;
+
+  if (!lineId) {
+    return undefined;
+  }
+
+  const point = lineGeoIndex[lineId];
+
+  if (!point) {
+    return undefined;
+  }
+
+  return {
+    name: point.name,
+    lat: point.lat,
+    lng: point.lng,
+  };
+}
+
+function formatLineNote(template: string, target: LineMapTarget) {
+  return template.replace("{line}", target.name);
 }

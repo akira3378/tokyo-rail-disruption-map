@@ -140,6 +140,7 @@ export function RailDisruptionMap({
             <div className="bg-[var(--map-bg)]">
               <RailwayTileOverview
                 copy={copy}
+                lineGeoIndex={snapshot.lineGeoIndex}
                 selectedDetail={selectedDetail}
               />
             </div>

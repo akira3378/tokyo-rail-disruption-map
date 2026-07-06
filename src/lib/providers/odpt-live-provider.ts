@@ -4,6 +4,7 @@ import {
   fetchOdptTrainInformation,
   ODPT_REVALIDATE_SECONDS,
 } from "../sources/odpt/client";
+import { buildLineGeoIndex } from "../sources/osm/line-geo-index";
 import { mapOdptRailwaysToNetwork } from "../sources/odpt/railway-network-mapper";
 import { mapOdptTrainInformationToOperationSnapshot } from "../sources/odpt/train-information-mapper";
 import { fetchYahooTrainInformation } from "../sources/yahoo/train-information";
@@ -41,5 +42,17 @@ export async function getOdptLiveRailwaySnapshot(): Promise<RailwaySnapshot> {
     incidents: [...operation.incidents, ...yahooIncidents],
   };
 
-  return buildRailwaySnapshot(mergedOperation, mapOdptRailwaysToNetwork(railways));
+  const network = mapOdptRailwaysToNetwork(railways);
+  const lineGeoIndex = await buildLineGeoIndex(
+    network.lines,
+    mergedOperation.incidents,
+  ).catch((error) => {
+    console.warn(error);
+    return {};
+  });
+
+  return buildRailwaySnapshot(mergedOperation, {
+    ...network,
+    lineGeoIndex,
+  });
 }

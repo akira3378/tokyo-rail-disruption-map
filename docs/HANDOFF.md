@@ -19,8 +19,8 @@ This app is a Tokyo-area rail disruption dashboard backed by ODPT data.
 - Current operation notices come from `odpt:TrainInformation`.
 - The overview content area uses free OpenStreetMap base tiles plus an
   OpenRailwayMap railway overlay.
-- When an abnormal line is selected, the app extracts station names from the
-  detail text and marks known stations on the map.
+- When an abnormal line is selected, the app uses the line name to look up an
+  OSM railway route relation and moves the map near that line when available.
 - The side panel lists abnormal ODPT lines only.
 - The app does not scrape Yahoo, NAVITIME, railway-company websites, or
   unofficial private endpoints.
@@ -40,8 +40,8 @@ This app is a Tokyo-area rail disruption dashboard backed by ODPT data.
   - `src/components/rail-disruption-map.tsx`
   - `src/components/rail-map/railway-tile-overview.tsx`
   - `src/components/rail-map/panels.tsx`
-- Station marker helper:
-  - `src/lib/map/station-locator.ts`
+- OSM line lookup helper:
+  - `src/lib/sources/osm/line-geo-index.ts`
 - I18n:
   - `src/lib/i18n.ts`
 
@@ -115,8 +115,8 @@ Lesson:
 
 - MapLibre is not automatically simpler unless the product is truly a geographic
   map with reliable route geometry. The current approach uses a third-party
-  railway tile layer for spatial context and overlays only station markers that
-  can be matched from incident text.
+  railway tile layer for spatial context and overlays only line-level markers
+  that can be matched from the abnormal line name.
 
 ### Yahoo Parity Assumption
 
@@ -156,7 +156,7 @@ error is a sandbox limitation, not necessarily an application build failure.
 
 ```text
 请先阅读 /Users/akira/Documents/Tokyo Railway Map/docs/HANDOFF.md 和当前 git 状态。
-我们要继续 Tokyo Rail Disruption Map。当前总览使用 OSM/OpenRailwayMap 免费铁路瓦片，侧边选择异常线路后根据详情里的站名匹配地图 marker。
+我们要继续 Tokyo Rail Disruption Map。当前总览使用 OSM/OpenRailwayMap 免费铁路瓦片，侧边选择异常线路后根据线路名称定位到 OSM route relation 附近。
 右侧异常线路默认只使用 ODPT TrainInformation；先不要接 Yahoo 或网页爬取。
 先不要 push，完成本地验证后再问我。
 ```

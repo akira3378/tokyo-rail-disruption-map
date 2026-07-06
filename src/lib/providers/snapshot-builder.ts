@@ -1,6 +1,7 @@
 import type {
   OperationSnapshot,
   Incident,
+  LineGeoIndex,
   LineViewModel,
   RailLine,
   RailStatus,
@@ -22,6 +23,7 @@ export function buildRailwaySnapshot(
   operation: OperationSnapshot,
   network: {
     stations: Station[];
+    lineGeoIndex?: LineGeoIndex;
     lines: RailLine[];
     segments: Segment[];
   },
@@ -101,6 +103,7 @@ export function buildRailwaySnapshot(
     operation,
     generatedAt: new Date().toISOString(),
     stations: network.stations,
+    lineGeoIndex: network.lineGeoIndex ?? {},
     lines: [...viewLines, ...externalLines],
   };
 }

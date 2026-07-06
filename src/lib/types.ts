@@ -36,6 +36,17 @@ export type Station = {
   };
 };
 
+export type LineGeoPoint = {
+  id: string;
+  name: string;
+  nameEn?: string;
+  lat: number;
+  lng: number;
+  source: "osm-overpass";
+};
+
+export type LineGeoIndex = Record<string, LineGeoPoint>;
+
 export type Segment = {
   id: string;
   lineId: string;
@@ -100,6 +111,7 @@ export type RailwaySnapshot = {
   operation: OperationSnapshot;
   generatedAt: string;
   stations: Station[];
+  lineGeoIndex: LineGeoIndex;
   lines: LineViewModel[];
 };
 

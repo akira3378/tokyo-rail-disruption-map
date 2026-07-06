@@ -11,7 +11,7 @@ Rail disruption information is operationally dense: users need to understand whi
 This project demonstrates:
 
 - structured data modeling for lines, incidents, and data snapshots
-- public-transit map overview with station markers for selected disruptions
+- public-transit map overview with line-level markers for selected disruptions
 - responsive dashboard UI for desktop and mobile
 - a clean data access layer backed by a documented open transport data source
 - a deployment-ready Next.js application for Vercel
@@ -30,7 +30,7 @@ This project demonstrates:
 - Clickable abnormal line list with detail panel
 - Chinese, Japanese, and English interface copy managed through a typed dictionary
 - Light and dark display modes using shared design tokens
-- Free OSM/OpenRailwayMap tile overview with station markers for selected disruptions
+- Free OSM/OpenRailwayMap tile overview with line-level markers for selected disruptions
 - ODPT TrainInformation server API route with short cache headers
 - Single current-data snapshot on the main page, refreshed by the browser every 60 seconds
 - Responsive layout for desktop and mobile screens
@@ -163,7 +163,9 @@ to the browser.
 
 The map overview uses public OpenStreetMap and OpenRailwayMap tiles directly in
 the browser. Keep usage small, show attribution, and do not bulk-download or
-prefetch tiles.
+prefetch tiles. The tiles are raster images; selected disruptions are located
+through a small server-side OSM/Overpass railway-route lookup, not by querying
+the tile image itself.
 
 ## Data Source Policy
 

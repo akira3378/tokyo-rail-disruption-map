@@ -71,7 +71,6 @@ export const copies = {
     },
     sidePanel: {
       sourceName: "ODPT TrainInformation",
-      supplementalSourceName: "补充来源",
       sourceNote:
         "范围：仅显示 ODPT 当前公开/返回的数据，可能不覆盖所有运营方和实际运行异常。",
       sourceReference: "官方说明",
@@ -134,7 +133,6 @@ export const copies = {
     },
     sidePanel: {
       sourceName: "ODPT TrainInformation",
-      supplementalSourceName: "補足データ",
       sourceNote:
         "範囲：ODPT が現在公開・返却しているデータのみを表示しており、すべての事業者・実際の運行異常を網羅するものではありません。",
       sourceReference: "公式説明",
@@ -197,7 +195,6 @@ export const copies = {
     },
     sidePanel: {
       sourceName: "ODPT TrainInformation",
-      supplementalSourceName: "Supplemental source",
       sourceNote:
         "Scope: shows only data currently published or returned by ODPT; it may not cover every operator or real-world disruption.",
       sourceReference: "Official note",

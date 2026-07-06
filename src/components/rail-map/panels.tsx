@@ -292,10 +292,7 @@ function formatIncidentSource(
   }
 
   const { raw } = incident.source;
-  const sourceName =
-    incident.source.provider === "yahoo"
-      ? copy.sidePanel.supplementalSourceName
-      : copy.sidePanel.sourceName;
+  const sourceName = copy.sidePanel.sourceName;
   const validUntil =
     "dct:valid" in raw && raw["dct:valid"]
       ? `${copy.sidePanel.validUntil} ${formatDateTime(raw["dct:valid"], copy)}`

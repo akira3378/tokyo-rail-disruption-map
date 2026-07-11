@@ -8,6 +8,12 @@
 
 このプロジェクトでは、東京圏の鉄道運行情報を題材に、外部 API 連携、型定義、データ変換、React コンポーネント分割、レスポンシブ UI、テーマ切り替え、多言語対応をまとめて実装しています。
 
+## ポートフォリオ上の位置づけ
+
+このプロジェクトは、第三者データを扱うアプリケーションの設計を示すものです。ODPT の公開データを server API で取得し、外部データをアプリ内の domain model に変換して地図 UI へ渡します。対して [Nothing Journal](https://github.com/akira3378/nothing-journal) は、Supabase Auth、Postgres、Storage、Realtime を使った認証付きコンテンツサービスとして、ユーザーとデータの関係を設計するプロジェクトです。
+
+このプロジェクトではユーザーアカウントや投稿データベースを持たず、外部 API の取得境界、秘密情報の扱い、データ変換、表示の信頼性を主な設計対象にしています。
+
 当初は独自の SVG 路線図で表示する案を検討しましたが、取得できる路線位置データが路線ごとに十分そろっていなかったため、無料の地図タイルと ODPT の運行情報を組み合わせる構成に変更しました。選択された異常路線については、サーバー側で OSM/Overpass から路線位置の候補を取得し、地図上に表示します。
 
 ## デモ
@@ -148,6 +154,10 @@ Browser
 ### Development Notes
 
 This project focuses on common frontend engineering work seen in real API-backed applications: third-party API integration, server/client boundaries, environment-variable handling, typed source adapters, domain modeling, component decomposition, responsive layout, i18n, theme switching, and deployment to Vercel.
+
+### Portfolio Positioning
+
+Tokyo Rail Disruption Map is the external-data integration project in the portfolio. It demonstrates how to keep a third-party API key on the server, normalize provider-specific payloads, and expose a stable application-facing snapshot. The companion [Nothing Journal](https://github.com/akira3378/nothing-journal) demonstrates a different boundary: authenticated users, owned content, Supabase persistence, and access control.
 
 ### Future Improvements
 

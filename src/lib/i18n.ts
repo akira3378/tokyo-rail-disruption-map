@@ -41,15 +41,17 @@ export const copies = {
     },
     map: {
       title: "运行状态总览",
-      description: "显示免费铁路地图图层；选择异常线路后会定位到对应线路附近。",
+      description:
+        "显示免费铁路地图图层；由于线路数据查询限制，选择异常线路后仅定位到线路附近，位置并不精确。",
       ariaLabel: "东京铁路运行状态总览",
       scenario: "数据快照",
       zoomIn: "放大",
       zoomOut: "缩小",
       resetZoom: "重置视图",
       zoomLevel: "缩放",
-      selectedLine: "已定位：{line}",
-      noLineTarget: "选择异常线路后，会尝试根据线路名称定位到地图附近。",
+      selectedLine: "线路附近（近似）：{line}",
+      noLineTarget:
+        "选择异常线路后，会尝试定位到线路附近；受数据查询限制，位置仅供参考。",
       freeLayerLabel: "免费瓦片",
       lineFallbackLabel: "线路级信息",
       lineFallbackDescription:
@@ -103,15 +105,16 @@ export const copies = {
     map: {
       title: "運行ステータス一覧",
       description:
-        "無料の鉄道マップレイヤーを表示し、異常路線を選ぶと該当路線の付近に移動します。",
+        "無料の鉄道マップレイヤーを表示します。路線データの取得制限により、異常路線を選択しても路線付近への概略表示となり、位置は正確ではありません。",
       ariaLabel: "東京圏鉄道運行ステータス一覧",
       scenario: "データスナップショット",
       zoomIn: "拡大",
       zoomOut: "縮小",
       resetZoom: "表示範囲を戻す",
       zoomLevel: "ズーム",
-      selectedLine: "表示中の路線：{line}",
-      noLineTarget: "異常路線を選ぶと、路線名から地図上の付近に移動します。",
+      selectedLine: "路線付近（概略）：{line}",
+      noLineTarget:
+        "異常路線を選ぶと路線付近に移動します。データ取得の制限により、位置は目安です。",
       freeLayerLabel: "無料タイル",
       lineFallbackLabel: "路線単位の情報",
       lineFallbackDescription:
@@ -165,15 +168,16 @@ export const copies = {
     map: {
       title: "Operation Status Overview",
       description:
-        "Shows a free railway map layer and moves near the selected disrupted line.",
+        "Shows a free railway map layer. Due to line-data query limitations, a selected disruption is located near the line only and may not be exact.",
       ariaLabel: "Tokyo rail operation status overview",
       scenario: "Data snapshot",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
       resetZoom: "Reset view",
       zoomLevel: "Zoom",
-      selectedLine: "Located line: {line}",
-      noLineTarget: "Select a disrupted line to locate the map by line name.",
+      selectedLine: "Approximate line area: {line}",
+      noLineTarget:
+        "Select a disrupted line to move near it. Due to data-query limitations, the location is approximate.",
       freeLayerLabel: "Free tiles",
       lineFallbackLabel: "Line-level notice",
       lineFallbackDescription:
